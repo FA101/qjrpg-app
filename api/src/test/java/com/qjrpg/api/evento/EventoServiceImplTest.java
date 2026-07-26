@@ -1,13 +1,14 @@
 package com.qjrpg.api.evento;
 
 import com.qjrpg.api.evento.dto.EventoRequest;
-import com.qjrpg.api.shared.exception.EventoNaoEncontradoException;
+import com.qjrpg.api.shared.exception.RecursoNaoEncontradoException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,11 +19,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * Nenhum destes testes toca um banco de dados real: o EventoRepository
- * e mockado, entao o teste roda em milissegundos e valida so a regra
- * de negocio do Service (RNF02 do PRD - CRUD testavel).
- */
 @ExtendWith(MockitoExtension.class)
 class EventoServiceImplTest {
 
@@ -38,9 +34,9 @@ class EventoServiceImplTest {
 
     @Test
     void deveCriarEvento() {
-        EventoRequest request = new EventoRequest(
-                "QJRPG Agosto", "HUB Goias", "https://maps.example.com", StatusEvento.PLANEJADO);
-        when(repository.save(any(Evento.class))).thenAnswer(chamada -> chamada.getArgument(0));
+        EventoRequest request = new EventoRequest("QJRPG Agosto", "HUB Goias", null,
+                StatusEvento.PLANEJADO, LocalTime.of(9, 0), LocalTime.of(22, 0));
+        when(repository.save(any(Evento.class))).thenAnswer(c -> c.getArgument(0));
 
         Evento resultado = service.criar(request);
 
@@ -51,12 +47,9 @@ class EventoServiceImplTest {
     @Test
     void deveListarTodosOsEventos() {
         when(repository.findAll()).thenReturn(List.of(
-                new Evento("Evento 1", "Local 1", null, StatusEvento.PUBLICADO)
-        ));
+                new Evento("Evento 1", "Local 1", null, StatusEvento.PUBLICADO, null, null)));
 
-        List<Evento> resultado = service.listarTodos();
-
-        assertThat(resultado).hasSize(1);
+        assertThat(service.listarTodos()).hasSize(1);
     }
 
     @Test
@@ -64,17 +57,18 @@ class EventoServiceImplTest {
         UUID idInexistente = UUID.randomUUID();
         when(repository.findById(idInexistente)).thenReturn(Optional.empty());
 
-        assertThrows(EventoNaoEncontradoException.class, () -> service.buscarPorId(idInexistente));
+        assertThrows(RecursoNaoEncontradoException.class, () -> service.buscarPorId(idInexistente));
     }
 
     @Test
     void deveAtualizarEvento() {
         UUID id = UUID.randomUUID();
-        Evento existente = new Evento("Antigo", "Local antigo", null, StatusEvento.PLANEJADO);
+        Evento existente = new Evento("Antigo", "Local antigo", null, StatusEvento.PLANEJADO, null, null);
         when(repository.findById(id)).thenReturn(Optional.of(existente));
-        when(repository.save(any(Evento.class))).thenAnswer(chamada -> chamada.getArgument(0));
+        when(repository.save(any(Evento.class))).thenAnswer(c -> c.getArgument(0));
 
-        EventoRequest request = new EventoRequest("Novo nome", "Novo local", null, StatusEvento.PUBLICADO);
+        EventoRequest request = new EventoRequest("Novo nome", "Novo local", null,
+                StatusEvento.PUBLICADO, LocalTime.of(9, 0), LocalTime.of(22, 0));
         Evento atualizado = service.atualizar(id, request);
 
         assertThat(atualizado.getNome()).isEqualTo("Novo nome");
@@ -84,7 +78,7 @@ class EventoServiceImplTest {
     @Test
     void deveExcluirEvento() {
         UUID id = UUID.randomUUID();
-        Evento existente = new Evento("Evento", "Local", null, StatusEvento.PLANEJADO);
+        Evento existente = new Evento("Evento", "Local", null, StatusEvento.PLANEJADO, null, null);
         when(repository.findById(id)).thenReturn(Optional.of(existente));
 
         service.excluir(id);

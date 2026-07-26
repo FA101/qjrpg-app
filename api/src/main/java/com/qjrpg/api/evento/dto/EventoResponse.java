@@ -3,6 +3,7 @@ package com.qjrpg.api.evento.dto;
 import com.qjrpg.api.evento.Evento;
 import com.qjrpg.api.evento.StatusEvento;
 
+import java.time.LocalTime;
 import java.util.UUID;
 
 public record EventoResponse(
@@ -10,15 +11,13 @@ public record EventoResponse(
         String nome,
         String local,
         String linkMapa,
-        StatusEvento status
+        StatusEvento status,
+        LocalTime horaInicioJanela,
+        LocalTime horaFimJanela
 ) {
     public static EventoResponse deEvento(Evento evento) {
         return new EventoResponse(
-                evento.getId(),
-                evento.getNome(),
-                evento.getLocal(),
-                evento.getLinkMapa(),
-                evento.getStatus()
-        );
+                evento.getId(), evento.getNome(), evento.getLocal(), evento.getLinkMapa(),
+                evento.getStatus(), evento.getHoraInicioJanela(), evento.getHoraFimJanela());
     }
 }

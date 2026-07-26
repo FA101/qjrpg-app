@@ -10,21 +10,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Centraliza a traducao de excecoes em respostas HTTP.
- * Novos modulos (Mesa, Candidatura etc.) reaproveitam esta classe
- * sem duplicar tratamento de erro (DRY).
+ * Centraliza a traducao de excecoes em respostas HTTP para TODOS os modulos
+ * (Evento, Tag, Mesa, Candidatura, Produto, Workshop, Mensagem, Conteudo, Link).
+ * Um unico handler por tipo de excecao, reaproveitado (DRY) em vez de repetir
+ * tratamento de erro em cada modulo.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EventoNaoEncontradoException.class)
-    public ResponseEntity<Map<String, String>> tratar(EventoNaoEncontradoException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("erro", ex.getMessage()));
+    @ExceptionHandler(RecursoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, String>> tratarNaoEncontrado(RecursoNaoEncontradoException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("erro", ex.getMessage()));
+    }
+
+    @ExceptionHandler(RegraDeNegocioException.class)
+    public ResponseEntity<Map<String, String>> tratarRegraDeNegocio(RegraDeNegocioException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(Map.of("erro", ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> tratar(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, String>> tratarValidacao(MethodArgumentNotValidException ex) {
         Map<String, String> erros = new HashMap<>();
         ex.getBindingResult().getFieldErrors()
                 .forEach(erro -> erros.put(erro.getField(), erro.getDefaultMessage()));

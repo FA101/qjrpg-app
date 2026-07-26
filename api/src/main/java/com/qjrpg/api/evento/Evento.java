@@ -8,13 +8,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.time.LocalTime;
 import java.util.UUID;
 
-/**
- * Entidade de dominio. Nao expoe setters soltos: qualquer alteracao passa
- * pelo metodo atualizar(), que concentra a regra em um unico lugar
- * (Single Responsibility / evita estado inconsistente espalhado pelo codigo).
- */
 @Entity
 @Table(name = "eventos")
 public class Evento {
@@ -35,41 +31,46 @@ public class Evento {
     @Column(nullable = false)
     private StatusEvento status;
 
+    // Janela de horario do evento (simplificacao v1: um dia por evento;
+    // multi-dia com DiaDeEvento fica para uma proxima iteracao).
+    private LocalTime horaInicioJanela;
+    private LocalTime horaFimJanela;
+
     protected Evento() {
-        // construtor exigido pelo JPA, nao usar diretamente
     }
 
-    public Evento(String nome, String local, String linkMapa, StatusEvento status) {
+    public Evento(String nome, String local, String linkMapa, StatusEvento status,
+                  LocalTime horaInicioJanela, LocalTime horaFimJanela) {
         this.nome = nome;
         this.local = local;
         this.linkMapa = linkMapa;
         this.status = status;
+        this.horaInicioJanela = horaInicioJanela;
+        this.horaFimJanela = horaFimJanela;
     }
 
-    public UUID getId() {
-        return id;
-    }
+    public UUID getId() { return id; }
+    public String getNome() { return nome; }
+    public String getLocal() { return local; }
+    public String getLinkMapa() { return linkMapa; }
+    public StatusEvento getStatus() { return status; }
+    public LocalTime getHoraInicioJanela() { return horaInicioJanela; }
+    public LocalTime getHoraFimJanela() { return horaFimJanela; }
 
-    public String getNome() {
-        return nome;
-    }
-
-    public String getLocal() {
-        return local;
-    }
-
-    public String getLinkMapa() {
-        return linkMapa;
-    }
-
-    public StatusEvento getStatus() {
-        return status;
-    }
-
-    public void atualizar(String nome, String local, String linkMapa, StatusEvento status) {
+    public void atualizar(String nome, String local, String linkMapa, StatusEvento status,
+                           LocalTime horaInicioJanela, LocalTime horaFimJanela) {
         this.nome = nome;
         this.local = local;
         this.linkMapa = linkMapa;
         this.status = status;
+        this.horaInicioJanela = horaInicioJanela;
+        this.horaFimJanela = horaFimJanela;
+    }
+
+    public boolean dentroDaJanela(LocalTime inicio, LocalTime fim) {
+        if (horaInicioJanela == null || horaFimJanela == null) {
+            return true; // evento sem janela definida ainda: nao bloqueia
+        }
+        return !inicio.isBefore(horaInicioJanela) && !fim.isAfter(horaFimJanela);
     }
 }
