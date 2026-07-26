@@ -1,0 +1,5 @@
+# Adicione estas linhas ao pubspec.yaml gerado pelo "flutter create" (dentro de dependencies:)
+dependencies:
+  flutter_riverpod: ^2.5.1
+  dio: ^5.5.0
+  intl: ^0.19.0

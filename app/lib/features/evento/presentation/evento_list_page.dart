@@ -1,0 +1,48 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../domain/evento.dart';
+import 'evento_providers.dart';
+
+class EventoListPage extends ConsumerWidget {
+  const EventoListPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final eventosAsync = ref.watch(eventosProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Eventos QJRPG')),
+      body: eventosAsync.when(
+        data: (eventos) => _ListaDeEventos(eventos: eventos),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (erro, _) => Center(child: Text('Erro ao carregar eventos: $erro')),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => ref.refresh(eventosProvider),
+        child: const Icon(Icons.refresh),
+      ),
+    );
+  }
+}
+
+class _ListaDeEventos extends StatelessWidget {
+  final List<Evento> eventos;
+  const _ListaDeEventos({required this.eventos});
+
+  @override
+  Widget build(BuildContext context) {
+    if (eventos.isEmpty) {
+      return const Center(child: Text('Nenhum evento cadastrado ainda.'));
+    }
+    return ListView.builder(
+      itemCount: eventos.length,
+      itemBuilder: (context, index) {
+        final evento = eventos[index];
+        return ListTile(
+          title: Text(evento.nome),
+          subtitle: Text('${evento.local} - ${evento.status.name}'),
+        );
+      },
+    );
+  }
+}
