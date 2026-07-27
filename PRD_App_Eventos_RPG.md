@@ -1,6 +1,6 @@
 # PRD — App de Gestão de Eventos de RPG, Card Games, Board Games e Wargames
 
-Versão: 0.2 · Autor: [preencher] · Data: 2026-07-24
+Versão: 0.2 · Autor: Fillipe Albuquerque · Data: 2026-07-24
 
 **Changelog v0.1 → v0.2:** adicionado papel Moderador e hierarquia de permissões;
 sistema de tags customizáveis; autenticação por celular com 2FA e biometria;
@@ -424,12 +424,3 @@ flowchart LR
   documento por evento — a mesma regra vale para todas as edições, salvo você queira regras
   específicas por evento.
 
-## 17. Próximos passos
-
-1. Validar as duas últimas pendências em aberto (Moderador suspender conta; adiantar
-   verificação documental de menores para a v1 ou não).
-2. Modelar o diagrama de classes com as entidades: Usuário, Responsável, Evento, DiaDeEvento,
-   Mesa, Candidatura, Produto, Workshop, Mensagem, Tag, RegraDeTag, ConteudoInstitucional,
-   LinkUtil.
-3. Detalhar a arquitetura em modelo C4 (Contexto → Container → Componente → Código).
-4. Só então configurar o ambiente de desenvolvimento.
