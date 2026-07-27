@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/widgets/app_drawer.dart';
 import '../domain/evento.dart';
 import 'evento_providers.dart';
+import 'evento_detail_page.dart';
 
 class EventoListPage extends ConsumerWidget {
   const EventoListPage({super.key});
@@ -12,6 +14,7 @@ class EventoListPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Eventos QJRPG')),
+      drawer: const AppDrawer(),
       body: eventosAsync.when(
         data: (eventos) => _ListaDeEventos(eventos: eventos),
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -41,6 +44,12 @@ class _ListaDeEventos extends StatelessWidget {
         return ListTile(
           title: Text(evento.nome),
           subtitle: Text('${evento.local} - ${evento.status.name}'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => EventoDetailPage(eventoId: evento.id!, nomeEvento: evento.nome),
+            ),
+          ),
         );
       },
     );

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/widgets/app_drawer.dart';
 import 'conteudo_providers.dart';
 
-// Regras do evento (RF52): acessivel sem autenticacao, editavel so por Admin (fase futura).
 class RegrasEventoPage extends ConsumerWidget {
   const RegrasEventoPage({super.key});
 
@@ -11,6 +11,7 @@ class RegrasEventoPage extends ConsumerWidget {
     final conteudoAsync = ref.watch(conteudoPorSecaoProvider('regras-gerais'));
     return Scaffold(
       appBar: AppBar(title: const Text('Regras do evento')),
+      drawer: const AppDrawer(),
       body: conteudoAsync.when(
         data: (c) => Padding(
           padding: const EdgeInsets.all(16),

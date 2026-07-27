@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/widgets/app_drawer.dart';
 import 'tag_providers.dart';
 
 class TagListPage extends ConsumerWidget {
@@ -10,6 +11,7 @@ class TagListPage extends ConsumerWidget {
     final tagsAsync = ref.watch(tagsProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Tags')),
+      drawer: const AppDrawer(),
       body: tagsAsync.when(
         data: (tags) => ListView(
           children: tags

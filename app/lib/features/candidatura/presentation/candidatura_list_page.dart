@@ -3,17 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/candidatura.dart';
 import 'candidatura_providers.dart';
 
-class CandidaturaListPage extends ConsumerWidget {
+class CandidaturaListBody extends ConsumerWidget {
   final String mesaId;
-  const CandidaturaListPage({super.key, required this.mesaId});
+  const CandidaturaListBody({super.key, required this.mesaId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final candidaturasAsync = ref.watch(candidaturasPorMesaProvider(mesaId));
-    return Scaffold(
-      appBar: AppBar(title: const Text('Candidaturas da mesa')),
-      body: candidaturasAsync.when(
-        data: (candidaturas) => ListView(
+    return candidaturasAsync.when(
+      data: (candidaturas) {
+        if (candidaturas.isEmpty) return const Center(child: Text('Nenhuma candidatura ainda.'));
+        return ListView(
           children: candidaturas.map((c) {
             final texto = c.bloqueada ? '${c.status.name} (bloqueada por conflito)' : c.status.name;
             return ListTile(
@@ -39,10 +39,10 @@ class CandidaturaListPage extends ConsumerWidget {
                   : null,
             );
           }).toList(),
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Erro: $e')),
-      ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Erro: $e')),
     );
   }
 }

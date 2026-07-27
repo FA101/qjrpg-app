@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/widgets/app_drawer.dart';
 import 'link_util_providers.dart';
 
 class LinkUtilListPage extends ConsumerWidget {
@@ -10,6 +11,7 @@ class LinkUtilListPage extends ConsumerWidget {
     final linksAsync = ref.watch(linksUteisProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Links uteis')),
+      drawer: const AppDrawer(),
       body: linksAsync.when(
         data: (links) => ListView(
           children: links.map((l) => ListTile(title: Text(l.titulo), subtitle: Text(l.categoria))).toList(),
