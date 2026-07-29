@@ -37,8 +37,10 @@ class CandidaturaServiceImplTest {
     void deveBloquearCandidaturaConflitanteAoAceitarOutra() {
         UUID mesaAId = UUID.randomUUID();
         UUID mesaBId = UUID.randomUUID();
-        Mesa mesaA = new Mesa(eventoId, UUID.randomUUID(), "RPG", LocalTime.of(9, 0), LocalTime.of(13, 0), 5);
-        Mesa mesaB = new Mesa(eventoId, UUID.randomUUID(), "Boardgame", LocalTime.of(11, 0), LocalTime.of(15, 0), 4);
+        Mesa mesaA = new Mesa(eventoId, UUID.randomUUID(), null, "RPG", null, null, null, null, null, null,
+                LocalTime.of(9, 0), LocalTime.of(13, 0), 5, 0);
+        Mesa mesaB = new Mesa(eventoId, UUID.randomUUID(), null, "Boardgame", null, null, null, null, null, null,
+                LocalTime.of(11, 0), LocalTime.of(15, 0), 4, 0);
 
         Candidatura candidaturaAceita = new Candidatura(mesaAId, usuarioId);
         Candidatura candidaturaConflitante = new Candidatura(mesaBId, usuarioId);

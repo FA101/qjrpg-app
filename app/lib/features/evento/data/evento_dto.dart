@@ -5,6 +5,7 @@ class EventoDto {
     return Evento(
       id: json['id'] as String?,
       nome: json['nome'] as String,
+      data: json['data'] as String,
       local: json['local'] as String,
       linkMapa: json['linkMapa'] as String?,
       status: StatusEvento.values.byName(json['status'] as String),
@@ -16,6 +17,7 @@ class EventoDto {
   static Map<String, dynamic> toJson(Evento evento) {
     return {
       'nome': evento.nome,
+      'data': evento.data,
       'local': evento.local,
       'linkMapa': evento.linkMapa,
       'status': evento.status.name,

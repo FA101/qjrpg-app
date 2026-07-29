@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/auth_session.dart';
 import '../../../core/utils/erro_utils.dart';
+import '../../auth/presentation/denunciar_dialog.dart';
 import '../domain/mensagem.dart';
 import 'mensagem_providers.dart';
 
@@ -41,7 +42,15 @@ class _MensagemListBodyState extends ConsumerState<MensagemListBody> {
             data: (mensagens) {
               if (mensagens.isEmpty) return const Center(child: Text('Nenhuma mensagem ainda.'));
               return ListView(
-                children: mensagens.map((m) => ListTile(title: Text(m.conteudo), subtitle: Text(m.dataHora ?? ''))).toList(),
+                children: mensagens.map((m) => ListTile(
+                      title: Text(m.conteudo),
+                      subtitle: Text('${m.autorNome ?? m.autorId} - ${m.dataHora ?? ''}'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.flag_outlined, size: 18),
+                        tooltip: 'Denunciar',
+                        onPressed: () => abrirDialogoDenuncia(context, m.autorId),
+                      ),
+                    )).toList(),
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -55,6 +64,7 @@ class _MensagemListBodyState extends ConsumerState<MensagemListBody> {
               child: TextField(
                 controller: _controller,
                 decoration: const InputDecoration(hintText: 'Escreva uma mensagem publica...'),
+                onSubmitted: (_) => _enviar(),
               ),
             ),
             IconButton(icon: const Icon(Icons.send), onPressed: _enviar),

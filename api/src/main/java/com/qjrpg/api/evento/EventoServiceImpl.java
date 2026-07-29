@@ -12,21 +12,16 @@ public class EventoServiceImpl implements EventoService {
 
     private final EventoRepository repository;
 
-    public EventoServiceImpl(EventoRepository repository) {
-        this.repository = repository;
+    public EventoServiceImpl(EventoRepository repository) { this.repository = repository; }
+
+    @Override
+    public Evento criar(EventoRequest r) {
+        return repository.save(new Evento(r.nome(), r.data(), r.local(), r.linkMapa(), r.status(),
+                r.horaInicioJanela(), r.horaFimJanela()));
     }
 
     @Override
-    public Evento criar(EventoRequest request) {
-        Evento evento = new Evento(request.nome(), request.local(), request.linkMapa(),
-                request.status(), request.horaInicioJanela(), request.horaFimJanela());
-        return repository.save(evento);
-    }
-
-    @Override
-    public List<Evento> listarTodos() {
-        return repository.findAll();
-    }
+    public List<Evento> listarTodos() { return repository.findAll(); }
 
     @Override
     public Evento buscarPorId(UUID id) {
@@ -35,15 +30,12 @@ public class EventoServiceImpl implements EventoService {
     }
 
     @Override
-    public Evento atualizar(UUID id, EventoRequest request) {
+    public Evento atualizar(UUID id, EventoRequest r) {
         Evento evento = buscarPorId(id);
-        evento.atualizar(request.nome(), request.local(), request.linkMapa(),
-                request.status(), request.horaInicioJanela(), request.horaFimJanela());
+        evento.atualizar(r.nome(), r.data(), r.local(), r.linkMapa(), r.status(), r.horaInicioJanela(), r.horaFimJanela());
         return repository.save(evento);
     }
 
     @Override
-    public void excluir(UUID id) {
-        repository.delete(buscarPorId(id));
-    }
+    public void excluir(UUID id) { repository.delete(buscarPorId(id)); }
 }

@@ -30,9 +30,9 @@ public class AuthController {
 
     @PostMapping("/confirmar-codigo")
     public AuthResponse confirmarCodigo(@Valid @RequestBody ConfirmarCodigoRequest r) {
-        AuthResultado resultado = authService.confirmarCodigo(r.email(), r.codigo(), r.nome(), r.celular());
+        AuthResultado resultado = authService.confirmarCodigo(r.email(), r.codigo(), r.nome(), r.celular(), r.apelido());
         Usuario u = resultado.usuario();
-        return new AuthResponse(resultado.token(), u.getId(), u.getNome(), u.getEmail(), u.getPapel());
+        return new AuthResponse(resultado.token(), u.getId(), u.getNome(), u.getApelido(), u.getEmail(), u.getPapel());
     }
 
     @GetMapping("/me")

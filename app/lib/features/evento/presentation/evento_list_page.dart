@@ -42,9 +42,10 @@ class _ListaDeEventos extends StatelessWidget {
       itemCount: eventos.length,
       itemBuilder: (context, index) {
         final evento = eventos[index];
+        final dataBr = evento.data.split('-').reversed.join('/');
         return ListTile(
           title: Text(evento.nome),
-          subtitle: Text('${evento.local} - ${evento.status.name}'),
+          subtitle: Text('$dataBr - ${evento.local} - ${evento.status.name}'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(

@@ -11,6 +11,8 @@ public class Usuario {
     @Column(nullable = false, unique = true) private String email;
     private String nome;
     private String celular;
+    @Column(unique = true) private String apelido;
+    @Column(nullable = false) private boolean mostrarNomeReal;
     @Enumerated(EnumType.STRING) @Column(nullable = false) private PapelUsuario papel;
     @Column(nullable = false) private boolean ativo;
     private String codigoVerificacao;
@@ -23,6 +25,7 @@ public class Usuario {
         this.email = email;
         this.papel = papel;
         this.ativo = true;
+        this.mostrarNomeReal = false;
         this.criadoEm = Instant.now();
     }
 
@@ -30,6 +33,8 @@ public class Usuario {
     public String getEmail() { return email; }
     public String getNome() { return nome; }
     public String getCelular() { return celular; }
+    public String getApelido() { return apelido; }
+    public boolean isMostrarNomeReal() { return mostrarNomeReal; }
     public PapelUsuario getPapel() { return papel; }
     public boolean isAtivo() { return ativo; }
 
@@ -48,8 +53,18 @@ public class Usuario {
                 && codigoExpiraEm != null && codigoExpiraEm.isAfter(Instant.now());
     }
 
-    public void completarCadastro(String nome, String celular) {
+    public void completarCadastro(String nome, String celular, String apelido) {
         if (nome != null && !nome.isBlank()) this.nome = nome;
         if (celular != null && !celular.isBlank()) this.celular = celular;
+        if (apelido != null && !apelido.isBlank()) this.apelido = apelido;
+    }
+
+    public void definirApelido(String apelido) { this.apelido = apelido; }
+    public void limparApelido() { this.apelido = null; }
+    public void definirPreferenciaNome(boolean mostrarNomeReal) { this.mostrarNomeReal = mostrarNomeReal; }
+
+    public String nomeExibicao() {
+        if (mostrarNomeReal && nome != null && !nome.isBlank()) return nome;
+        return apelido != null ? apelido : "Usuario";
     }
 }

@@ -26,22 +26,30 @@ public class MesaServiceImpl implements MesaService {
         Evento evento = eventoRepository.findById(r.eventoId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Evento nao encontrado: " + r.eventoId()));
 
-        // RF49: mesa nao pode ficar fora da janela do evento
         if (!evento.dentroDaJanela(r.horaInicio(), r.horaFim())) {
             throw new RegraDeNegocioException("Horario fora da janela do evento (" +
                     evento.getHoraInicioJanela() + " - " + evento.getHoraFimJanela() + ")");
         }
 
-        // RF48: usuario nao oferta duas mesas no mesmo horario do mesmo evento
-        List<Mesa> mesasDoGameMaster = mesaRepository.findByEventoIdAndGameMasterId(r.eventoId(), r.gameMasterId());
-        boolean temSobreposicao = mesasDoGameMaster.stream()
-                .anyMatch(mesa -> mesa.sobrepoe(r.horaInicio(), r.horaFim()));
+        List<Mesa> mesasDoEvento = mesaRepository.findByEventoId(r.eventoId());
+
+        if (r.numero() != null) {
+            boolean numeroDuplicado = mesasDoEvento.stream().anyMatch(m -> r.numero().equals(m.getNumero()));
+            if (numeroDuplicado) {
+                throw new RegraDeNegocioException("Ja existe uma mesa numero " + r.numero() + " neste evento");
+            }
+        }
+
+        boolean temSobreposicao = mesasDoEvento.stream()
+                .filter(m -> m.getGameMasterId().equals(r.gameMasterId()))
+                .anyMatch(m -> m.sobrepoe(r.horaInicio(), r.horaFim()));
         if (temSobreposicao) {
             throw new RegraDeNegocioException("Voce ja tem uma mesa nesse horario neste evento");
         }
 
-        return mesaRepository.save(new Mesa(r.eventoId(), r.gameMasterId(), r.tipoJogo(),
-                r.horaInicio(), r.horaFim(), r.vagas()));
+        return mesaRepository.save(new Mesa(r.eventoId(), r.gameMasterId(), r.numero(), r.tipoJogo(),
+                r.sistemaJogo(), r.tituloAventura(), r.sinopse(), r.palavrasChave(), r.observacoes(), r.faixaEtaria(),
+                r.horaInicio(), r.horaFim(), r.vagasTotais(), r.vagasReservadas()));
     }
 
     @Override

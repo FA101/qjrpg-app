@@ -5,4 +5,5 @@ import java.util.UUID;
 public interface CandidaturaRepository extends JpaRepository<Candidatura, UUID> {
     List<Candidatura> findByMesaId(UUID mesaId);
     List<Candidatura> findByUsuarioIdAndStatus(UUID usuarioId, StatusCandidatura status);
+    long countByMesaIdAndStatus(UUID mesaId, StatusCandidatura status);
 }

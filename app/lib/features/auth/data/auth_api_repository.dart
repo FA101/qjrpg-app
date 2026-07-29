@@ -14,9 +14,9 @@ class AuthApiRepository implements AuthRepository {
   }
 
   @override
-  Future<Usuario> confirmarCodigo(String email, String codigo, {String? nome, String? celular}) async {
+  Future<Usuario> confirmarCodigo(String email, String codigo, {String? nome, String? celular, String? apelido}) async {
     final r = await _dio.post('/auth/confirmar-codigo', data: {
-      'email': email, 'codigo': codigo, 'nome': nome, 'celular': celular,
+      'email': email, 'codigo': codigo, 'nome': nome, 'celular': celular, 'apelido': apelido,
     });
     final dados = r.data as Map<String, dynamic>;
 
@@ -27,6 +27,7 @@ class AuthApiRepository implements AuthRepository {
     return Usuario(
       id: dados['usuarioId'] as String,
       nome: dados['nome'] as String?,
+      apelido: dados['apelido'] as String?,
       email: dados['email'] as String,
       papel: dados['papel'] as String,
     );

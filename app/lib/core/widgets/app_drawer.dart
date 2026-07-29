@@ -5,6 +5,7 @@ import '../../features/tag/presentation/tag_list_page.dart';
 import '../../features/link/presentation/link_util_list_page.dart';
 import '../../features/conteudo/presentation/regras_evento_page.dart';
 import '../../features/auth/presentation/auth_providers.dart';
+import '../../features/auth/presentation/perfil_page.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -38,6 +39,11 @@ class AppDrawer extends ConsumerWidget {
             leading: const Icon(Icons.rule),
             title: const Text('Regras do evento'),
             onTap: () => _irPara(context, const RegrasEventoPage()),
+          ),
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text('Meu perfil'),
+            onTap: () => _irPara(context, const PerfilPage()),
           ),
           const Divider(),
           ListTile(

@@ -7,16 +7,14 @@ import '../domain/usuario.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) => AuthApiRepository(DioClient.instance));
 
-/// Estado simples: usuario logado (ou null). Widgets observam isso para
-/// decidir entre mostrar LoginPage ou o app normal.
 class AuthNotifier extends StateNotifier<Usuario?> {
   final AuthRepository _repository;
   AuthNotifier(this._repository) : super(null);
 
   Future<String> solicitarCodigo(String email) => _repository.solicitarCodigo(email);
 
-  Future<void> confirmarCodigo(String email, String codigo, {String? nome, String? celular}) async {
-    state = await _repository.confirmarCodigo(email, codigo, nome: nome, celular: celular);
+  Future<void> confirmarCodigo(String email, String codigo, {String? nome, String? celular, String? apelido}) async {
+    state = await _repository.confirmarCodigo(email, codigo, nome: nome, celular: celular, apelido: apelido);
   }
 
   void sair() {

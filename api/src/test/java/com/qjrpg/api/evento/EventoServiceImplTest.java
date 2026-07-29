@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -22,32 +23,29 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class EventoServiceImplTest {
 
-    @Mock
-    private EventoRepository repository;
-
+    @Mock private EventoRepository repository;
     private EventoService service;
 
     @BeforeEach
-    void configurar() {
-        service = new EventoServiceImpl(repository);
-    }
+    void configurar() { service = new EventoServiceImpl(repository); }
 
     @Test
     void deveCriarEvento() {
-        EventoRequest request = new EventoRequest("QJRPG Agosto", "HUB Goias", null,
+        EventoRequest request = new EventoRequest("QJRPG Agosto", LocalDate.of(2026, 8, 15), "HUB Goias", null,
                 StatusEvento.PLANEJADO, LocalTime.of(9, 0), LocalTime.of(22, 0));
         when(repository.save(any(Evento.class))).thenAnswer(c -> c.getArgument(0));
 
         Evento resultado = service.criar(request);
 
         assertThat(resultado.getNome()).isEqualTo("QJRPG Agosto");
+        assertThat(resultado.getData()).isEqualTo(LocalDate.of(2026, 8, 15));
         verify(repository).save(any(Evento.class));
     }
 
     @Test
     void deveListarTodosOsEventos() {
         when(repository.findAll()).thenReturn(List.of(
-                new Evento("Evento 1", "Local 1", null, StatusEvento.PUBLICADO, null, null)));
+                new Evento("Evento 1", LocalDate.of(2026, 9, 12), "Local 1", null, StatusEvento.PUBLICADO, null, null)));
 
         assertThat(service.listarTodos()).hasSize(1);
     }
@@ -63,22 +61,22 @@ class EventoServiceImplTest {
     @Test
     void deveAtualizarEvento() {
         UUID id = UUID.randomUUID();
-        Evento existente = new Evento("Antigo", "Local antigo", null, StatusEvento.PLANEJADO, null, null);
+        Evento existente = new Evento("Antigo", LocalDate.of(2026, 1, 1), "Local antigo", null, StatusEvento.PLANEJADO, null, null);
         when(repository.findById(id)).thenReturn(Optional.of(existente));
         when(repository.save(any(Evento.class))).thenAnswer(c -> c.getArgument(0));
 
-        EventoRequest request = new EventoRequest("Novo nome", "Novo local", null,
+        EventoRequest request = new EventoRequest("Novo nome", LocalDate.of(2026, 10, 3), "Novo local", null,
                 StatusEvento.PUBLICADO, LocalTime.of(9, 0), LocalTime.of(22, 0));
         Evento atualizado = service.atualizar(id, request);
 
         assertThat(atualizado.getNome()).isEqualTo("Novo nome");
-        assertThat(atualizado.getStatus()).isEqualTo(StatusEvento.PUBLICADO);
+        assertThat(atualizado.getData()).isEqualTo(LocalDate.of(2026, 10, 3));
     }
 
     @Test
     void deveExcluirEvento() {
         UUID id = UUID.randomUUID();
-        Evento existente = new Evento("Evento", "Local", null, StatusEvento.PLANEJADO, null, null);
+        Evento existente = new Evento("Evento", LocalDate.of(2026, 1, 1), "Local", null, StatusEvento.PLANEJADO, null, null);
         when(repository.findById(id)).thenReturn(Optional.of(existente));
 
         service.excluir(id);

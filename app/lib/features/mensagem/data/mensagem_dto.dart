@@ -5,6 +5,7 @@ class MensagemDto {
         id: json['id'] as String?,
         mesaId: json['mesaId'] as String,
         autorId: json['autorId'] as String,
+        autorNome: json['autorNome'] as String?,
         respostaDeId: json['respostaDeId'] as String?,
         conteudo: json['conteudo'] as String,
         dataHora: json['dataHora'] as String?,

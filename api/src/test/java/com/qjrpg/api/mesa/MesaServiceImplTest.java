@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -32,24 +33,25 @@ class MesaServiceImplTest {
     private final UUID gmId = UUID.randomUUID();
 
     @BeforeEach
-    void configurar() {
-        service = new MesaServiceImpl(mesaRepository, eventoRepository);
-    }
+    void configurar() { service = new MesaServiceImpl(mesaRepository, eventoRepository); }
 
     private Evento eventoComJanela() {
-        return new Evento("QJRPG", "HUB Goias", null, StatusEvento.PUBLICADO,
+        return new Evento("QJRPG", LocalDate.of(2026, 8, 15), "HUB Goias", null, StatusEvento.PUBLICADO,
                 LocalTime.of(9, 0), LocalTime.of(22, 0));
+    }
+
+    private MesaRequest requestPadrao(Integer numero, LocalTime inicio, LocalTime fim) {
+        return new MesaRequest(eventoId, gmId, numero, "RPG", "D&D 2024", "Titulo", "Sinopse",
+                "palavra1,palavra2", "Observacoes", "Livre", inicio, fim, 5, 0);
     }
 
     @Test
     void devePermitirHorariosEncostados() {
         when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(eventoComJanela()));
-        when(mesaRepository.findByEventoIdAndGameMasterId(eventoId, gmId)).thenReturn(List.of());
+        when(mesaRepository.findByEventoId(eventoId)).thenReturn(List.of());
         when(mesaRepository.save(any(Mesa.class))).thenAnswer(c -> c.getArgument(0));
 
-        // mesa das 14h-18h, nova mesa 18h-22h: nao deve lancar excecao
-        MesaRequest r = new MesaRequest(eventoId, gmId, "RPG", LocalTime.of(18, 0), LocalTime.of(22, 0), 5);
-        Mesa mesa = service.ofertar(r);
+        Mesa mesa = service.ofertar(requestPadrao(1, LocalTime.of(18, 0), LocalTime.of(22, 0)));
 
         assertThat(mesa.getHoraInicio()).isEqualTo(LocalTime.of(18, 0));
     }
@@ -57,20 +59,30 @@ class MesaServiceImplTest {
     @Test
     void deveRecusarSobreposicaoDeHorario() {
         when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(eventoComJanela()));
-        Mesa mesaExistente = new Mesa(eventoId, gmId, "RPG", LocalTime.of(9, 0), LocalTime.of(14, 0), 5);
-        when(mesaRepository.findByEventoIdAndGameMasterId(eventoId, gmId)).thenReturn(List.of(mesaExistente));
+        Mesa mesaExistente = new Mesa(eventoId, gmId, 1, "RPG", "D&D 2024", null, null, null, null, "Livre",
+                LocalTime.of(9, 0), LocalTime.of(14, 0), 5, 0);
+        when(mesaRepository.findByEventoId(eventoId)).thenReturn(List.of(mesaExistente));
 
-        MesaRequest r = new MesaRequest(eventoId, gmId, "Boardgame", LocalTime.of(13, 0), LocalTime.of(17, 0), 4);
-
-        assertThrows(RegraDeNegocioException.class, () -> service.ofertar(r));
+        assertThrows(RegraDeNegocioException.class, () ->
+                service.ofertar(requestPadrao(2, LocalTime.of(13, 0), LocalTime.of(17, 0))));
     }
 
     @Test
     void deveRecusarForaDaJanelaDoEvento() {
         when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(eventoComJanela()));
 
-        MesaRequest r = new MesaRequest(eventoId, gmId, "Wargame", LocalTime.of(7, 0), LocalTime.of(9, 30), 3);
+        assertThrows(RegraDeNegocioException.class, () ->
+                service.ofertar(requestPadrao(1, LocalTime.of(7, 0), LocalTime.of(9, 30))));
+    }
 
-        assertThrows(RegraDeNegocioException.class, () -> service.ofertar(r));
+    @Test
+    void deveRecusarNumeroDuplicadoNoMesmoEvento() {
+        when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(eventoComJanela()));
+        Mesa mesaExistente = new Mesa(eventoId, UUID.randomUUID(), 7, "RPG", null, null, null, null, null, "Livre",
+                LocalTime.of(9, 0), LocalTime.of(13, 0), 5, 0);
+        when(mesaRepository.findByEventoId(eventoId)).thenReturn(List.of(mesaExistente));
+
+        assertThrows(RegraDeNegocioException.class, () ->
+                service.ofertar(requestPadrao(7, LocalTime.of(14, 0), LocalTime.of(18, 0))));
     }
 }
