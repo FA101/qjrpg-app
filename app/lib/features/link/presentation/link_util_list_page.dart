@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/app_drawer.dart';
 import 'link_util_providers.dart';
+import 'link_util_form_dialog.dart';
 
 class LinkUtilListPage extends ConsumerWidget {
   const LinkUtilListPage({super.key});
@@ -18,6 +19,10 @@ class LinkUtilListPage extends ConsumerWidget {
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Erro: $e')),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => abrirFormularioLink(context, ref),
+        child: const Icon(Icons.add),
       ),
     );
   }

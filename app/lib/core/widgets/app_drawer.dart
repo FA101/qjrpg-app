@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/evento/presentation/evento_list_page.dart';
 import '../../features/tag/presentation/tag_list_page.dart';
 import '../../features/link/presentation/link_util_list_page.dart';
 import '../../features/conteudo/presentation/regras_evento_page.dart';
+import '../../features/auth/presentation/auth_providers.dart';
 
-/// Menu lateral com as telas de nivel global (sem depender de um evento/mesa
-/// especifico). Reutilizado em todas as paginas de topo (DRY: um unico lugar
-/// define a navegacao principal do app).
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -40,13 +39,22 @@ class AppDrawer extends StatelessWidget {
             title: const Text('Regras do evento'),
             onTap: () => _irPara(context, const RegrasEventoPage()),
           ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('Sair'),
+            onTap: () {
+              ref.read(authNotifierProvider.notifier).sair();
+              Navigator.of(context).pop();
+            },
+          ),
         ],
       ),
     );
   }
 
   void _irPara(BuildContext context, Widget pagina) {
-    Navigator.of(context).pop(); // fecha o drawer
+    Navigator.of(context).pop();
     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => pagina));
   }
 }

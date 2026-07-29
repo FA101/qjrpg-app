@@ -4,6 +4,7 @@ import com.qjrpg.api.link.dto.LinkUtilResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +16,7 @@ public class LinkUtilController {
     private final LinkUtilService service;
     public LinkUtilController(LinkUtilService service) { this.service = service; }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<LinkUtilResponse> criar(@Valid @RequestBody LinkUtilRequest r) {
         return ResponseEntity.status(HttpStatus.CREATED).body(LinkUtilResponse.de(service.criar(r)));
@@ -25,11 +27,13 @@ public class LinkUtilController {
         return service.listarTodos().stream().map(LinkUtilResponse::de).collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public LinkUtilResponse atualizar(@PathVariable UUID id, @Valid @RequestBody LinkUtilRequest r) {
         return LinkUtilResponse.de(service.atualizar(id, r));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluir(@PathVariable UUID id) {
         service.excluir(id);

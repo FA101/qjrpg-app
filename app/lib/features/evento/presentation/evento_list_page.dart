@@ -4,6 +4,7 @@ import '../../../core/widgets/app_drawer.dart';
 import '../domain/evento.dart';
 import 'evento_providers.dart';
 import 'evento_detail_page.dart';
+import 'evento_form_dialog.dart';
 
 class EventoListPage extends ConsumerWidget {
   const EventoListPage({super.key});
@@ -21,8 +22,8 @@ class EventoListPage extends ConsumerWidget {
         error: (erro, _) => Center(child: Text('Erro ao carregar eventos: $erro')),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => ref.refresh(eventosProvider),
-        child: const Icon(Icons.refresh),
+        onPressed: () => abrirFormularioEvento(context, ref),
+        child: const Icon(Icons.add),
       ),
     );
   }

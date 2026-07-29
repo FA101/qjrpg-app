@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/app_drawer.dart';
 import 'tag_providers.dart';
+import 'tag_form_dialog.dart';
 
 class TagListPage extends ConsumerWidget {
   const TagListPage({super.key});
@@ -24,6 +25,10 @@ class TagListPage extends ConsumerWidget {
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Erro: $e')),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => abrirFormularioTag(context, ref),
+        child: const Icon(Icons.add),
       ),
     );
   }

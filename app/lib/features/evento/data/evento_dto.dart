@@ -1,7 +1,5 @@
 import '../domain/evento.dart';
 
-/// Traduz entre o JSON da API e a entidade de dominio.
-/// Isolar isso aqui evita que o formato da API vaze para o resto do app (DRY).
 class EventoDto {
   static Evento fromJson(Map<String, dynamic> json) {
     return Evento(
@@ -10,6 +8,8 @@ class EventoDto {
       local: json['local'] as String,
       linkMapa: json['linkMapa'] as String?,
       status: StatusEvento.values.byName(json['status'] as String),
+      horaInicioJanela: json['horaInicioJanela'] as String?,
+      horaFimJanela: json['horaFimJanela'] as String?,
     );
   }
 
@@ -19,8 +19,8 @@ class EventoDto {
       'local': evento.local,
       'linkMapa': evento.linkMapa,
       'status': evento.status.name,
-      'horaInicioJanela': null,
-      'horaFimJanela': null,
+      'horaInicioJanela': evento.horaInicioJanela,
+      'horaFimJanela': evento.horaFimJanela,
     };
   }
 }
