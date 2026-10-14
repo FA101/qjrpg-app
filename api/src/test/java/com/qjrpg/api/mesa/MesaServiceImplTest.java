@@ -4,6 +4,7 @@ import com.qjrpg.api.evento.Evento;
 import com.qjrpg.api.evento.EventoRepository;
 import com.qjrpg.api.evento.StatusEvento;
 import com.qjrpg.api.mesa.dto.MesaRequest;
+import com.qjrpg.api.notificacao.NotificacaoService;
 import com.qjrpg.api.shared.exception.RegraDeNegocioException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,13 +28,14 @@ class MesaServiceImplTest {
 
     @Mock private MesaRepository mesaRepository;
     @Mock private EventoRepository eventoRepository;
+    @Mock private NotificacaoService notificacaoService;
     private MesaService service;
 
     private final UUID eventoId = UUID.randomUUID();
     private final UUID gmId = UUID.randomUUID();
 
     @BeforeEach
-    void configurar() { service = new MesaServiceImpl(mesaRepository, eventoRepository); }
+    void configurar() { service = new MesaServiceImpl(mesaRepository, eventoRepository, notificacaoService); }
 
     private Evento eventoComJanela() {
         return new Evento("QJRPG", LocalDate.of(2026, 8, 15), "HUB Goias", null, StatusEvento.PUBLICADO,
@@ -51,7 +53,7 @@ class MesaServiceImplTest {
         when(mesaRepository.findByEventoId(eventoId)).thenReturn(List.of());
         when(mesaRepository.save(any(Mesa.class))).thenAnswer(c -> c.getArgument(0));
 
-        Mesa mesa = service.ofertar(requestPadrao(1, LocalTime.of(18, 0), LocalTime.of(22, 0)));
+        Mesa mesa = service.ofertar(requestPadrao(1, LocalTime.of(18, 0), LocalTime.of(22, 0)), gmId);
 
         assertThat(mesa.getHoraInicio()).isEqualTo(LocalTime.of(18, 0));
     }
@@ -64,7 +66,7 @@ class MesaServiceImplTest {
         when(mesaRepository.findByEventoId(eventoId)).thenReturn(List.of(mesaExistente));
 
         assertThrows(RegraDeNegocioException.class, () ->
-                service.ofertar(requestPadrao(2, LocalTime.of(13, 0), LocalTime.of(17, 0))));
+                service.ofertar(requestPadrao(2, LocalTime.of(13, 0), LocalTime.of(17, 0)), gmId));
     }
 
     @Test
@@ -72,7 +74,25 @@ class MesaServiceImplTest {
         when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(eventoComJanela()));
 
         assertThrows(RegraDeNegocioException.class, () ->
-                service.ofertar(requestPadrao(1, LocalTime.of(7, 0), LocalTime.of(9, 30))));
+                service.ofertar(requestPadrao(1, LocalTime.of(7, 0), LocalTime.of(9, 30)), gmId));
+    }
+
+    @Test
+    void deveRecusarInicioDepoisDoFim() {
+        assertThrows(RegraDeNegocioException.class, () ->
+                service.ofertar(requestPadrao(1, LocalTime.of(15, 0), LocalTime.of(14, 0)), gmId));
+    }
+
+    @Test
+    void deveUsarUsuarioAutenticadoComoGameMaster() {
+        when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(eventoComJanela()));
+        when(mesaRepository.findByEventoId(eventoId)).thenReturn(List.of());
+        when(mesaRepository.save(any(Mesa.class))).thenAnswer(c -> c.getArgument(0));
+        UUID outroUsuario = UUID.randomUUID();
+
+        Mesa mesa = service.ofertar(requestPadrao(3, LocalTime.of(9, 0), LocalTime.of(12, 0)), outroUsuario);
+
+        assertThat(mesa.getGameMasterId()).isEqualTo(outroUsuario);
     }
 
     @Test
@@ -83,6 +103,6 @@ class MesaServiceImplTest {
         when(mesaRepository.findByEventoId(eventoId)).thenReturn(List.of(mesaExistente));
 
         assertThrows(RegraDeNegocioException.class, () ->
-                service.ofertar(requestPadrao(7, LocalTime.of(14, 0), LocalTime.of(18, 0))));
+                service.ofertar(requestPadrao(7, LocalTime.of(14, 0), LocalTime.of(18, 0)), gmId));
     }
 }

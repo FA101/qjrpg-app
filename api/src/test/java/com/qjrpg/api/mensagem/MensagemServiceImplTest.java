@@ -22,7 +22,9 @@ class MensagemServiceImplTest {
     @Test
     void deveEnviarMensagem() {
         when(repository.save(any(Mensagem.class))).thenAnswer(c -> c.getArgument(0));
-        Mensagem m = service.enviar(new MensagemRequest(UUID.randomUUID(), UUID.randomUUID(), null, "Ola, tem vaga?"));
+        UUID autor = UUID.randomUUID();
+        Mensagem m = service.enviar(new MensagemRequest(UUID.randomUUID(), null, null, "Ola, tem vaga?"), autor);
         assertThat(m.getConteudo()).isEqualTo("Ola, tem vaga?");
+        assertThat(m.getAutorId()).isEqualTo(autor);
     }
 }

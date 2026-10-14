@@ -1,23 +1,38 @@
+# Valores sensiveis vem de variaveis de ambiente (RNF06). Os defaults abaixo
+# servem apenas para desenvolvimento local - nunca use-os em producao.
 spring:
   application:
     name: qjrpg-api
+  config:
+    # Overrides locais de desenvolvimento (fora do git): api/application-local.yml
+    import: "optional:file:./application-local.yml"
   datasource:
-    url: jdbc:postgresql://localhost:5432/qjrpg
-    username: postgres
-    password: 12345
+    url: ${QJRPG_DB_URL:jdbc:postgresql://localhost:5432/qjrpg}
+    username: ${QJRPG_DB_USER:postgres}
+    password: ${QJRPG_DB_PASSWORD:postgres}
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: ${QJRPG_SHOW_SQL:false}
     properties:
       hibernate:
         format_sql: true
 
 server:
-  port: 8080
-  
+  port: ${PORT:8080}
+
 app:
   jwt:
-    secret: "troque-este-segredo-antes-de-qualquer-uso-real-0123456789"
-    expiracao-dias: 365
-  admin-emails: "fillipe.mendonca@gmail.com"
+    # Em producao defina QJRPG_JWT_SECRET (>= 32 caracteres, aleatorio).
+    secret: ${QJRPG_JWT_SECRET:dev-only-segredo-local-nao-usar-em-producao-0123456789}
+    expiracao-dias: ${QJRPG_JWT_EXPIRACAO_DIAS:30}
+  cors:
+    # Origens do front-end (padroes aceitos pelo Spring, separados por virgula).
+    origens: ${QJRPG_CORS_ORIGENS:http://localhost:*}
+  auth:
+    # true apenas em desenvolvimento: devolve o codigo de login na resposta da API,
+    # ja que o envio real de e-mail (SMTP) ainda nao esta configurado.
+    # Em producao defina QJRPG_EXPOR_CODIGO=false.
+    expor-codigo: ${QJRPG_EXPOR_CODIGO:true}
+  # E-mails (separados por virgula) que viram ADMIN no primeiro login.
+  admin-emails: ${QJRPG_ADMIN_EMAILS:}

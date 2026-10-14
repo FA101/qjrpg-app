@@ -1,4 +1,5 @@
 package com.qjrpg.api.workshop;
+import com.qjrpg.api.notificacao.NotificacaoService;
 import com.qjrpg.api.workshop.dto.WorkshopRequest;
 import com.qjrpg.api.shared.exception.RecursoNaoEncontradoException;
 import org.springframework.stereotype.Service;
@@ -8,11 +9,16 @@ import java.util.UUID;
 @Service
 public class WorkshopServiceImpl implements WorkshopService {
     private final WorkshopRepository repository;
-    public WorkshopServiceImpl(WorkshopRepository repository) { this.repository = repository; }
+    private final NotificacaoService notificacaoService;
+
+    public WorkshopServiceImpl(WorkshopRepository repository, NotificacaoService notificacaoService) {
+        this.repository = repository;
+        this.notificacaoService = notificacaoService;
+    }
 
     @Override
-    public Workshop propor(WorkshopRequest r) {
-        return repository.save(new Workshop(r.usuarioId(), r.eventoId(), r.tema(), r.descricao(), r.horarioDesejado()));
+    public Workshop propor(WorkshopRequest r, UUID usuarioId) {
+        return repository.save(new Workshop(usuarioId, r.eventoId(), r.tema(), r.descricao(), r.horarioDesejado()));
     }
 
     @Override
@@ -28,7 +34,9 @@ public class WorkshopServiceImpl implements WorkshopService {
     public Workshop atualizarStatus(UUID id, StatusWorkshop status) {
         Workshop w = buscarPorId(id);
         w.atualizarStatus(status);
-        return repository.save(w);
+        Workshop salvo = repository.save(w);
+        notificacaoService.notificar(w.getUsuarioId(), "Seu workshop '" + w.getTema() + "' foi atualizado para: " + status);
+        return salvo;
     }
 
     @Override

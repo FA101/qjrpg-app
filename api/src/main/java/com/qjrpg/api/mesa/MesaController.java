@@ -1,4 +1,5 @@
 package com.qjrpg.api.mesa;
+import com.qjrpg.api.auth.seguranca.UsuarioLogado;
 import com.qjrpg.api.candidatura.CandidaturaRepository;
 import com.qjrpg.api.candidatura.StatusCandidatura;
 import com.qjrpg.api.mesa.dto.MesaRequest;
@@ -9,6 +10,9 @@ import com.qjrpg.api.usuario.UsuarioRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import com.qjrpg.api.shared.exception.AcessoNegadoException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
@@ -36,9 +40,11 @@ public class MesaController {
         return MesaResponse.de(m, gameMasterNome, disponiveis);
     }
 
+    // RF07: qualquer usuario autenticado pode ofertar mesa.
     @PostMapping
-    public ResponseEntity<MesaResponse> ofertar(@Valid @RequestBody MesaRequest r) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(paraResponse(service.ofertar(r)));
+    public ResponseEntity<MesaResponse> ofertar(@Valid @RequestBody MesaRequest r, Authentication auth) {
+        Mesa mesa = service.ofertar(r, UsuarioLogado.id(auth));
+        return ResponseEntity.status(HttpStatus.CREATED).body(paraResponse(mesa));
     }
 
     @GetMapping
@@ -49,13 +55,20 @@ public class MesaController {
     @GetMapping("/{id}")
     public MesaResponse buscar(@PathVariable UUID id) { return paraResponse(service.buscarPorId(id)); }
 
+    // RF08: aprovar/recusar mesa e acao de Admin ou Moderador.
+    @PreAuthorize("hasAnyRole('ADMIN','MODERADOR')")
     @PatchMapping("/{id}/status")
     public MesaResponse atualizarStatus(@PathVariable UUID id, @Valid @RequestBody MesaStatusRequest r) {
         return paraResponse(service.atualizarStatus(id, r.status()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluir(@PathVariable UUID id) {
+    public ResponseEntity<Void> excluir(@PathVariable UUID id, Authentication auth) {
+        Mesa mesa = service.buscarPorId(id);
+        boolean ehGameMaster = mesa.getGameMasterId().equals(UsuarioLogado.id(auth));
+        if (!ehGameMaster && !UsuarioLogado.ehAdminOuModerador(auth)) {
+            throw new AcessoNegadoException("Somente o Game Master da mesa (ou Admin/Moderador) pode exclui-la");
+        }
         service.excluir(id);
         return ResponseEntity.noContent().build();
     }

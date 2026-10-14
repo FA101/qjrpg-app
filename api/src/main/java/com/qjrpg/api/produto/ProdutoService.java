@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ProdutoService {
-    Produto criar(ProdutoRequest request);
+    Produto criar(ProdutoRequest request, UUID usuarioId);
     List<Produto> listarPorEvento(UUID eventoId);
     Produto buscarPorId(UUID id);
     Produto atualizar(UUID id, ProdutoRequest request);

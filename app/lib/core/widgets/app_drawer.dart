@@ -6,12 +6,17 @@ import '../../features/link/presentation/link_util_list_page.dart';
 import '../../features/conteudo/presentation/regras_evento_page.dart';
 import '../../features/auth/presentation/auth_providers.dart';
 import '../../features/auth/presentation/perfil_page.dart';
+import '../../features/moderacao/presentation/denuncias_page.dart';
+import '../../features/relatorio/presentation/relatorio_page.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final usuario = ref.watch(authNotifierProvider);
+    final ehModeracao = usuario?.papel == 'ADMIN' || usuario?.papel == 'MODERADOR';
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -45,13 +50,25 @@ class AppDrawer extends ConsumerWidget {
             title: const Text('Meu perfil'),
             onTap: () => _irPara(context, const PerfilPage()),
           ),
+          if (ehModeracao) ...[
+            ListTile(
+              leading: const Icon(Icons.flag),
+              title: const Text('Denuncias pendentes'),
+              onTap: () => _irPara(context, const DenunciasPage()),
+            ),
+            ListTile(
+              leading: const Icon(Icons.bar_chart),
+              title: const Text('Relatorios'),
+              onTap: () => _irPara(context, const RelatorioPage()),
+            ),
+          ],
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Sair'),
-            onTap: () {
-              ref.read(authNotifierProvider.notifier).sair();
-              Navigator.of(context).pop();
+            onTap: () async {
+              await ref.read(authNotifierProvider.notifier).sair();
+              if (context.mounted) Navigator.of(context).pop();
             },
           ),
         ],

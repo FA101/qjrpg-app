@@ -11,3 +11,11 @@ class Usuario {
     required this.papel, this.mostrarNomeReal = false,
   });
 }
+
+class LoginResultado {
+  final Usuario? usuario;
+  final bool totpPendente;
+  /// Emitido pela API quando o 2FA esta ativo; deve ser reenviado com o codigo TOTP.
+  final String? desafio2fa;
+  const LoginResultado({this.usuario, this.totpPendente = false, this.desafio2fa});
+}

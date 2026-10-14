@@ -49,43 +49,48 @@ class ProdutoListBody extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setState) => AlertDialog(
-          title: const Text('Divulgar produto'),
-          content: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(controller: titulo, decoration: const InputDecoration(labelText: 'Titulo')),
-            TextField(controller: descricao, decoration: const InputDecoration(labelText: 'Descricao')),
-            TextField(controller: linkExterno, decoration: const InputDecoration(labelText: 'Link externo (opcional)')),
-            DropdownButton<TipoProduto>(
-              value: tipo,
-              items: TipoProduto.values.map((t) => DropdownMenuItem(value: t, child: Text(t.name))).toList(),
-              onChanged: (v) => setState(() => tipo = v!),
-            ),
-          ]),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancelar')),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  await ref.read(produtoRepositoryProvider).criar(Produto(
-                        usuarioId: AuthSession.usuarioId!,
-                        eventoId: eventoId,
-                        tipo: tipo,
-                        titulo: titulo.text.trim(),
-                        descricao: descricao.text.trim().isEmpty ? null : descricao.text.trim(),
-                        linkExterno: linkExterno.text.trim().isEmpty ? null : linkExterno.text.trim(),
-                      ));
-                  ref.invalidate(produtosPorEventoProvider(eventoId));
-                  if (dialogContext.mounted) Navigator.pop(dialogContext);
-                } catch (e) {
-                  if (dialogContext.mounted) {
-                    ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text(extrairMensagemErro(e))));
-                  }
-                }
-              },
-              child: const Text('Divulgar'),
-            ),
-          ],
-        ),
+        builder: (dialogContext, setState) {
+          Future<void> divulgar() async {
+            try {
+              await ref.read(produtoRepositoryProvider).criar(Produto(
+                    usuarioId: AuthSession.usuarioId!,
+                    eventoId: eventoId,
+                    tipo: tipo,
+                    titulo: titulo.text.trim(),
+                    descricao: descricao.text.trim().isEmpty ? null : descricao.text.trim(),
+                    linkExterno: linkExterno.text.trim().isEmpty ? null : linkExterno.text.trim(),
+                  ));
+              ref.invalidate(produtosPorEventoProvider(eventoId));
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
+            } catch (e) {
+              if (dialogContext.mounted) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text(extrairMensagemErro(e))));
+              }
+            }
+          }
+
+          return AlertDialog(
+            title: const Text('Divulgar produto'),
+            content: Column(mainAxisSize: MainAxisSize.min, children: [
+              TextField(controller: titulo, decoration: const InputDecoration(labelText: 'Titulo')),
+              TextField(controller: descricao, decoration: const InputDecoration(labelText: 'Descricao')),
+              TextField(
+                controller: linkExterno,
+                decoration: const InputDecoration(labelText: 'Link externo (opcional)'),
+                onSubmitted: (_) => divulgar(),
+              ),
+              DropdownButton<TipoProduto>(
+                value: tipo,
+                items: TipoProduto.values.map((t) => DropdownMenuItem(value: t, child: Text(t.name))).toList(),
+                onChanged: (v) => setState(() => tipo = v!),
+              ),
+            ]),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancelar')),
+              ElevatedButton(onPressed: divulgar, child: const Text('Divulgar')),
+            ],
+          );
+        },
       ),
     );
   }

@@ -13,18 +13,18 @@ horários de mesas e conflito de candidaturas.
 Aplicativo mobile-first (Android nativo + PWA instalável para iOS/Web) para criação e
 gestão de um evento comunitário mensal de jogos de mesa (RPG, card games, board games e
 wargames). O público-alvo usa majoritariamente celular como único dispositivo de acesso à
-internet — por isso a autenticação e a experiência são desenhadas em torno do número de
-celular, não do e-mail. O evento é gratuito, público e comunitário — o app não realiza
-cobranças nem processa pagamentos.
+internet. Por isso a autenticação e a experiência são desenhadas em torno do número de
+celular, não do e-mail. 
+O evento é gratuito, público e comunitário.
+O app não realiza cobranças ou processa pagamentos.
 
 ## 2. Objetivos do produto
 
 - Centralizar a organização do evento mensal.
-- Reduzir atrito para quem quer ofertar ou se candidatar a uma mesa de jogo.
+- Ampliar a informação, transparência e reduzir atrito para quem quer ofertar ou se candidatar a uma mesa de jogo.
 - Dar visibilidade a vendedores e proponentes de workshop dentro do evento.
-- Oferecer uma experiência acessível, inclusiva e em múltiplos idiomas.
-- Servir como projeto de estudo aplicado de engenharia de software (SOLID, Clean Code, DRY,
-  modularização, testes) para o autor.
+- Oferecer uma experiência acessível, inclusiva e em múltiplos idiomas (internacionalização).
+- Servir como projeto de estudo aplicado de engenharia de software (SOLID, Clean Code, DRY, modularização, testes) para o autor.
 
 ## 3. Escopo
 

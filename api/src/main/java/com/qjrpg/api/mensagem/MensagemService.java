@@ -3,7 +3,8 @@ import com.qjrpg.api.mensagem.dto.MensagemRequest;
 import java.util.List;
 import java.util.UUID;
 public interface MensagemService {
-    Mensagem enviar(MensagemRequest request);
+    Mensagem enviar(MensagemRequest request, UUID autorId);
+    Mensagem buscarPorId(UUID id);
     List<Mensagem> listarPorMesa(UUID mesaId);
     void excluir(UUID id);
 }

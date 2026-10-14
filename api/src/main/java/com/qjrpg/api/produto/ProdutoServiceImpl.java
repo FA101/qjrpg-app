@@ -11,8 +11,8 @@ public class ProdutoServiceImpl implements ProdutoService {
     public ProdutoServiceImpl(ProdutoRepository repository) { this.repository = repository; }
 
     @Override
-    public Produto criar(ProdutoRequest r) {
-        return repository.save(new Produto(r.usuarioId(), r.eventoId(), r.tipo(), r.titulo(),
+    public Produto criar(ProdutoRequest r, UUID usuarioId) {
+        return repository.save(new Produto(usuarioId, r.eventoId(), r.tipo(), r.titulo(),
                 r.descricao(), r.imagemUrl(), r.linkExterno()));
     }
 

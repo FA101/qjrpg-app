@@ -3,7 +3,7 @@ import com.qjrpg.api.mesa.dto.MesaRequest;
 import java.util.List;
 import java.util.UUID;
 public interface MesaService {
-    Mesa ofertar(MesaRequest request);
+    Mesa ofertar(MesaRequest request, UUID gameMasterId);
     List<Mesa> listarPorEvento(UUID eventoId);
     Mesa buscarPorId(UUID id);
     Mesa atualizarStatus(UUID id, StatusMesa status);

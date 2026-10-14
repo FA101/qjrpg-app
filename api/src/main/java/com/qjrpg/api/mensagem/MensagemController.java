@@ -1,9 +1,12 @@
 package com.qjrpg.api.mensagem;
+import com.qjrpg.api.auth.seguranca.UsuarioLogado;
 import com.qjrpg.api.mensagem.dto.MensagemRequest;
 import com.qjrpg.api.mensagem.dto.MensagemResponse;
 import com.qjrpg.api.usuario.Usuario;
 import com.qjrpg.api.usuario.UsuarioRepository;
+import com.qjrpg.api.shared.exception.AcessoNegadoException;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +32,9 @@ public class MensagemController {
     }
 
     @PostMapping
-    public ResponseEntity<MensagemResponse> enviar(@Valid @RequestBody MensagemRequest r) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(paraResponse(service.enviar(r)));
+    public ResponseEntity<MensagemResponse> enviar(@Valid @RequestBody MensagemRequest r, Authentication auth) {
+        Mensagem enviada = service.enviar(r, UsuarioLogado.id(auth));
+        return ResponseEntity.status(HttpStatus.CREATED).body(paraResponse(enviada));
     }
 
     @GetMapping
@@ -39,7 +43,12 @@ public class MensagemController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluir(@PathVariable UUID id) {
+    public ResponseEntity<Void> excluir(@PathVariable UUID id, Authentication auth) {
+        Mensagem mensagem = service.buscarPorId(id);
+        boolean ehAutor = mensagem.getAutorId().equals(UsuarioLogado.id(auth));
+        if (!ehAutor && !UsuarioLogado.ehAdminOuModerador(auth)) {
+            throw new AcessoNegadoException("Somente o autor (ou Admin/Moderador) pode excluir a mensagem");
+        }
         service.excluir(id);
         return ResponseEntity.noContent().build();
     }

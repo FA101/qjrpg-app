@@ -1,10 +1,10 @@
 package com.qjrpg.api.candidatura;
-import com.qjrpg.api.candidatura.dto.CandidaturaRequest;
 import java.util.List;
 import java.util.UUID;
 public interface CandidaturaService {
-    Candidatura candidatar(CandidaturaRequest request);
+    Candidatura candidatar(UUID mesaId, UUID usuarioId);
     List<Candidatura> listarPorMesa(UUID mesaId);
+    Candidatura buscarPorId(UUID id);
     Candidatura aceitar(UUID id);
     Candidatura recusar(UUID id);
     void remover(UUID id);

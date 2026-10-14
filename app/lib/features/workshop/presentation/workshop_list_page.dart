@@ -43,6 +43,24 @@ class WorkshopListBody extends ConsumerWidget {
     final descricao = TextEditingController();
     final horario = TextEditingController();
 
+    Future<void> propor(BuildContext dialogContext) async {
+      try {
+        await ref.read(workshopRepositoryProvider).propor(Workshop(
+              usuarioId: AuthSession.usuarioId!,
+              eventoId: eventoId,
+              tema: tema.text.trim(),
+              descricao: descricao.text.trim().isEmpty ? null : descricao.text.trim(),
+              horarioDesejado: horario.text.trim().isEmpty ? null : normalizarHora(horario.text.trim()),
+            ));
+        ref.invalidate(workshopsPorEventoProvider(eventoId));
+        if (dialogContext.mounted) Navigator.pop(dialogContext);
+      } catch (e) {
+        if (dialogContext.mounted) {
+          ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text(extrairMensagemErro(e))));
+        }
+      }
+    }
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -50,30 +68,15 @@ class WorkshopListBody extends ConsumerWidget {
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           TextField(controller: tema, decoration: const InputDecoration(labelText: 'Tema')),
           TextField(controller: descricao, decoration: const InputDecoration(labelText: 'Descricao')),
-          TextField(controller: horario, decoration: const InputDecoration(labelText: 'Horario desejado (HH:mm, opcional)')),
+          TextField(
+            controller: horario,
+            decoration: const InputDecoration(labelText: 'Horario desejado (HH:mm, opcional)'),
+            onSubmitted: (_) => propor(dialogContext),
+          ),
         ]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () async {
-              try {
-                await ref.read(workshopRepositoryProvider).propor(Workshop(
-                      usuarioId: AuthSession.usuarioId!,
-                      eventoId: eventoId,
-                      tema: tema.text.trim(),
-                      descricao: descricao.text.trim().isEmpty ? null : descricao.text.trim(),
-                      horarioDesejado: horario.text.trim().isEmpty ? null : normalizarHora(horario.text.trim()),
-                    ));
-                ref.invalidate(workshopsPorEventoProvider(eventoId));
-                if (dialogContext.mounted) Navigator.pop(dialogContext);
-              } catch (e) {
-                if (dialogContext.mounted) {
-                  ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text(extrairMensagemErro(e))));
-                }
-              }
-            },
-            child: const Text('Propor'),
-          ),
+          ElevatedButton(onPressed: () => propor(dialogContext), child: const Text('Propor')),
         ],
       ),
     );

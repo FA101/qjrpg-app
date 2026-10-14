@@ -24,7 +24,9 @@ class ProdutoServiceImplTest {
         when(repository.save(any(Produto.class))).thenAnswer(c -> c.getArgument(0));
         ProdutoRequest r = new ProdutoRequest(UUID.randomUUID(), UUID.randomUUID(), TipoProduto.DIGITAL,
                 "Livro de regras", "PDF", null, "https://loja.exemplo.com");
-        Produto p = service.criar(r);
+        UUID dono = UUID.randomUUID();
+        Produto p = service.criar(r, dono);
+        assertThat(p.getUsuarioId()).isEqualTo(dono);
         assertThat(p.getTitulo()).isEqualTo("Livro de regras");
     }
 }

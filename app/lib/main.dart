@@ -21,12 +21,22 @@ class QjrpgApp extends StatelessWidget {
   }
 }
 
+/// Espera a tentativa de reidratar a sessao salva (SharedPreferences) antes
+/// de decidir entre LoginPage e o app - evita "piscar" a tela de login
+/// toda vez que a pagina e recarregada (F5) com uma sessao ainda valida.
 class _PortaDeEntrada extends ConsumerWidget {
   const _PortaDeEntrada();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final usuario = ref.watch(authNotifierProvider);
-    return usuario == null ? const LoginPage() : const EventoListPage();
+    final inicializacao = ref.watch(sessaoInicialProvider);
+    return inicializacao.when(
+      data: (_) {
+        final usuario = ref.watch(authNotifierProvider);
+        return usuario == null ? const LoginPage() : const EventoListPage();
+      },
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (_, __) => const LoginPage(),
+    );
   }
 }

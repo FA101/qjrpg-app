@@ -3,6 +3,7 @@ package com.qjrpg.api.mesa;
 import com.qjrpg.api.evento.Evento;
 import com.qjrpg.api.evento.EventoRepository;
 import com.qjrpg.api.mesa.dto.MesaRequest;
+import com.qjrpg.api.notificacao.NotificacaoService;
 import com.qjrpg.api.shared.exception.RecursoNaoEncontradoException;
 import com.qjrpg.api.shared.exception.RegraDeNegocioException;
 import org.springframework.stereotype.Service;
@@ -15,14 +16,23 @@ public class MesaServiceImpl implements MesaService {
 
     private final MesaRepository mesaRepository;
     private final EventoRepository eventoRepository;
+    private final NotificacaoService notificacaoService;
 
-    public MesaServiceImpl(MesaRepository mesaRepository, EventoRepository eventoRepository) {
+    public MesaServiceImpl(MesaRepository mesaRepository, EventoRepository eventoRepository,
+                            NotificacaoService notificacaoService) {
         this.mesaRepository = mesaRepository;
         this.eventoRepository = eventoRepository;
+        this.notificacaoService = notificacaoService;
     }
 
     @Override
-    public Mesa ofertar(MesaRequest r) {
+    public Mesa ofertar(MesaRequest r, UUID gameMasterId) {
+        if (!r.horaInicio().isBefore(r.horaFim())) {
+            throw new RegraDeNegocioException("O horario de inicio deve ser anterior ao de termino");
+        }
+        if (r.vagasReservadas() > r.vagasTotais()) {
+            throw new RegraDeNegocioException("Vagas reservadas nao podem exceder as vagas totais");
+        }
         Evento evento = eventoRepository.findById(r.eventoId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Evento nao encontrado: " + r.eventoId()));
 
@@ -41,13 +51,13 @@ public class MesaServiceImpl implements MesaService {
         }
 
         boolean temSobreposicao = mesasDoEvento.stream()
-                .filter(m -> m.getGameMasterId().equals(r.gameMasterId()))
+                .filter(m -> m.getGameMasterId().equals(gameMasterId))
                 .anyMatch(m -> m.sobrepoe(r.horaInicio(), r.horaFim()));
         if (temSobreposicao) {
             throw new RegraDeNegocioException("Voce ja tem uma mesa nesse horario neste evento");
         }
 
-        return mesaRepository.save(new Mesa(r.eventoId(), r.gameMasterId(), r.numero(), r.tipoJogo(),
+        return mesaRepository.save(new Mesa(r.eventoId(), gameMasterId, r.numero(), r.tipoJogo(),
                 r.sistemaJogo(), r.tituloAventura(), r.sinopse(), r.palavrasChave(), r.observacoes(), r.faixaEtaria(),
                 r.horaInicio(), r.horaFim(), r.vagasTotais(), r.vagasReservadas()));
     }
@@ -65,7 +75,10 @@ public class MesaServiceImpl implements MesaService {
     public Mesa atualizarStatus(UUID id, StatusMesa status) {
         Mesa mesa = buscarPorId(id);
         mesa.atualizarStatus(status);
-        return mesaRepository.save(mesa);
+        Mesa salva = mesaRepository.save(mesa);
+        notificacaoService.notificar(mesa.getGameMasterId(),
+                "Sua mesa '" + mesa.getTipoJogo() + "' foi atualizada para: " + status);
+        return salva;
     }
 
     @Override

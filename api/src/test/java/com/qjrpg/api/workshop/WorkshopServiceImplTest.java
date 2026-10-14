@@ -1,5 +1,6 @@
 package com.qjrpg.api.workshop;
 
+import com.qjrpg.api.notificacao.NotificacaoService;
 import com.qjrpg.api.workshop.dto.WorkshopRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,10 +16,11 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class WorkshopServiceImplTest {
     @Mock private WorkshopRepository repository;
+    @Mock private NotificacaoService notificacaoService;
     private WorkshopService service;
 
     @BeforeEach
-    void configurar() { service = new WorkshopServiceImpl(repository); }
+    void configurar() { service = new WorkshopServiceImpl(repository, notificacaoService); }
 
     @Test
     void deveAprovarWorkshop() {

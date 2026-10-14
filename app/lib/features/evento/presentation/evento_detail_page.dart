@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/ics_export.dart';
+import '../domain/evento.dart';
 import '../../mesa/presentation/mesa_list_page.dart';
 import '../../produto/presentation/produto_list_page.dart';
 import '../../workshop/presentation/workshop_list_page.dart';
 
-/// Detalhe de um evento: abas de Mesas, Catalogo (Produtos) e Workshops.
 class EventoDetailPage extends StatelessWidget {
-  final String eventoId;
-  final String nomeEvento;
-  const EventoDetailPage({super.key, required this.eventoId, required this.nomeEvento});
+  final Evento evento;
+  const EventoDetailPage({super.key, required this.evento});
 
   @override
   Widget build(BuildContext context) {
@@ -15,14 +15,28 @@ class EventoDetailPage extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(nomeEvento),
+          title: Text(evento.nome),
+          actions: [
+            if (exportacaoIcsDisponivel)
+            IconButton(
+              icon: const Icon(Icons.calendar_month),
+              tooltip: 'Adicionar ao calendario',
+              onPressed: () => baixarIcsDoEvento(
+                nome: evento.nome,
+                data: evento.data,
+                local: evento.local,
+                horaInicio: evento.horaInicioJanela,
+                horaFim: evento.horaFimJanela,
+              ),
+            ),
+          ],
           bottom: const TabBar(tabs: [Tab(text: 'Mesas'), Tab(text: 'Catalogo'), Tab(text: 'Workshops')]),
         ),
         body: TabBarView(
           children: [
-            MesaListBody(eventoId: eventoId),
-            ProdutoListBody(eventoId: eventoId),
-            WorkshopListBody(eventoId: eventoId),
+            MesaListBody(eventoId: evento.id!),
+            ProdutoListBody(eventoId: evento.id!),
+            WorkshopListBody(eventoId: evento.id!),
           ],
         ),
       ),

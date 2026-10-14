@@ -48,9 +48,7 @@ class _ListaDeEventos extends StatelessWidget {
           subtitle: Text('$dataBr - ${evento.local} - ${evento.status.name}'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => EventoDetailPage(eventoId: evento.id!, nomeEvento: evento.nome),
-            ),
+            MaterialPageRoute(builder: (_) => EventoDetailPage(evento: evento)),
           ),
         );
       },
