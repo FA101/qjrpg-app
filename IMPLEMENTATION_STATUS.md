@@ -1,6 +1,6 @@
 # IMPLEMENTATION_STATUS — QJRPG
 
-Última atualização: 2026-10-13 · Fonte de verdade de requisitos: `PRD_App_Eventos_RPG.md` (v0.2)
+Última atualização: 2026-10-14 · Fonte de verdade de requisitos: `PRD_App_Eventos_RPG.md` (v0.2)
 
 ## Stack (confirmada no código)
 - **API:** Spring Boot 4.1.0 · Java 21 · Spring Data JPA · PostgreSQL · Spring Security + JWT (jjwt 0.12.6) · TOTP (`dev.samstevens.totp` 1.7.1) · testes JUnit 5 + Mockito.
@@ -35,21 +35,24 @@ Legenda: ✅ implementado · 🟡 parcial · ⬜ pendente
 | RF06, RF49 | 🟡 | Janela de horário por evento; RF06 (quantidade de mesas por dia) pendente. |
 | RF07, RF48 | ✅ | Oferta valida janela, sobreposição e início < fim; GM = usuário autenticado. |
 | RF08 | ✅ | Aprovar/recusar/ajuste (Admin/Moderador) com notificação ao GM. |
-| RF09, RF15, RF19, RF21, RF26 | ⬜ | Atribuição automática/manual de tags a usuários ainda não existe (Tag não tem vínculo com Usuario). |
+| RF09, RF15, RF19 | ✅ | Tags fixas criadas na subida da API (`TagsDoSistemaInicializador`); Game Master ao aprovar mesa, Vendas ao divulgar produto, Apoiador ao aprovar workshop. Sem retroatividade para dados antigos. |
+| RF21 | ✅ | `usuario_tags` (cumulativas); "Minhas tags" no perfil com `TagChip` (nome sempre em texto). |
+| RF26, RF25 (tags) | ✅ | `POST/DELETE /api/usuarios/{id}/tags/{tagId}`; Moderador só em usuários comuns; tag Moderador só por promoção. Tela "Usuarios" no menu de moderação. |
 | RF10, RF44 | ✅ | Só em mesa aprovada, com vaga, sem duplicidade, GM não se candidata à própria mesa. |
 | RF11 | ✅ | GM (ou Admin/Mod) aceita/recusa; candidato é notificado. |
 | RF12, RF13 | ✅ | Mensagens persistentes; autor = usuário autenticado; resposta encadeada só na mesma mesa. |
 | RF14, RF16 | ✅ | Catálogo por evento; dono = usuário autenticado; edição/exclusão só dono ou Admin/Mod. |
 | RF17, RF18 | ✅ | Workshops com aprovação e notificação. |
 | RF20, RF37 | 🟡 | `NotificacaoService` registra em log e respeita opt-out; **push real (FCM) pendente** (requer projeto Firebase do autor). |
-| RF22–RF25 | 🟡 | Promoção/demoção via API (`/api/usuarios/{id}/papel`, só Admin); falta tela e bloqueio de remover o último Admin. |
+| RF22–RF25 | ✅ | Promoção/demoção (só Admin) na tela "Usuarios"; tag Moderador acompanha o papel; bloqueado demover o último Admin. |
 | RF27, RF28 | ✅ | Tags com cor exclusiva (validação no serviço). Regra automática customizada pendente. |
 | RF30 | ✅ | TOTP com **desafio de sessão** (corrige bypass do 1º fator) e limite de 5 tentativas. |
 | RF31, RF32 | ⬜ | Biometria — só faz sentido no build Android nativo (`local_auth`). |
 | RF33 | ⬜ | Recuperação de conta (contato de confiança + códigos de backup + espera). |
-| RF34, RF35, RF36b | 🟡 | Menor exige e-mail do responsável; confirmação/revogação pelo responsável. Falta bloqueio de acesso enquanto pendente (RF35) e evidência de consentimento (RF35b). |
-| RF35b, RF36, RF36c | ⬜ | Termo + evidência (data/hora/dispositivo), troca de responsável com revisão, painel do responsável. |
-| RF38, RF39 | ✅ | Suspensão ≤ 90 dias reversível; exclusão por anonimização (inclui segredo TOTP). |
+| RF34 | 🟡 | Menor exige e-mail do responsável (nome/celular do responsável ainda não coletados). |
+| RF35, RF36b | ✅ | Menor sem autorização recebe papel restrito (`PENDENTE_RESPONSAVEL`, só vê o próprio perfil) e tela explicativa; responsável autoriza ou suspende na hora em "Meu perfil". |
+| RF35b, RF36, RF36c | ⬜ | Termo + evidência (data/hora/dispositivo), troca de responsável com revisão, painel com participações do menor (hoje só lista os menores vinculados). |
+| RF38, RF39 | ✅ | Suspensão ≤ 90 dias **reversível pelo próprio usuário** (corrigido: antes a conta suspensa não conseguia logar para reativar); exclusão por anonimização. |
 | RF40, RF51 | ⬜ | Confirmação dupla configurável; perguntar sobre conteúdo associado na suspensão. |
 | RF41, RF42 | 🟡 | Relatório de mesas com filtros (evento, GM, tipo, mês, ano, faixa etária, sexo). Faltam consolidado 12 meses, vagas, frequência. |
 | RF43 | 🟡 | `.ics` (RFC 5545, com escape de texto) no **web/PWA**; no Android o botão fica oculto até haver compartilhamento de arquivo. |
@@ -73,6 +76,7 @@ Legenda: ✅ implementado · 🟡 parcial · ⬜ pendente
 - **Execução:** ver seção "Histórico de verificação".
 
 ## Histórico de verificação
+- 2026-10-14: etapa 1–2 verificada no PC do autor — `mvnw.cmd test` e testes Flutter **passaram**. Etapa 3 (tags, RF35, reativação) entregue; aguardando nova execução dos testes no PC.
 - 2026-10-13: mescla feita num ambiente na nuvem **sem acesso ao Maven Central / pub.dev** (bloqueados pela rede) → **não foi possível compilar nem rodar testes lá**. Pendente rodar no PC: `mvnw.cmd test`, `flutter pub get`, `flutter analyze`, `flutter test`.
 
 ## Bloqueios e dependências externas
@@ -81,7 +85,8 @@ Legenda: ✅ implementado · 🟡 parcial · ⬜ pendente
 - Banco: as novas colunas usam default; se o Hibernate reclamar, recriar o banco de desenvolvimento.
 
 ## Próxima tarefa recomendada
-1. Rodar a verificação no PC e corrigir o que falhar.
-2. Tags automáticas (RF09/15/19/21/26) + RF35 (bloqueio de conta de menor pendente).
-3. i18n (RNF11) e tema/acessibilidade (RNF12).
-4. Envio de e-mail (SMTP) e RF33.
+1. Rodar a verificação da etapa 3 no PC.
+2. i18n (RNF11: ARB pt-BR/en-US/es-ES/fr-FR) e tema centralizado/alto contraste (RNF12).
+3. RF35b/RF36 (termo e evidência de consentimento; troca de responsável com revisão).
+4. Envio de e-mail (SMTP) e RF33 (recuperação de conta).
+5. RF50 (eventos multi-dia) e RF41/42 completos.

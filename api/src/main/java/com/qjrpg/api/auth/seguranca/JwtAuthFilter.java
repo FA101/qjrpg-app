@@ -49,9 +49,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private void autenticar(Usuario usuario) {
-        // Conta inativa (excluida) ou suspensa: nao autentica - o resto da cadeia barra por 401/403.
-        if (!usuario.isAtivo() || usuario.estaSuspenso()) return;
-        var authority = new SimpleGrantedAuthority("ROLE_" + usuario.getPapel().name());
+        // Conta inativa (excluida/desativada pela moderacao): nao autentica.
+        if (!usuario.isAtivo()) return;
+        // Acesso restrito (ver SecurityConfig): conta suspensa pelo proprio usuario (RF38) so
+        // ve o perfil e reativa; menor sem autorizacao do responsavel (RF35) so ve o perfil.
+        String papel;
+        if (usuario.estaSuspenso()) papel = "SUSPENSO";
+        else if (usuario.aguardandoAutorizacaoResponsavel()) papel = "PENDENTE_RESPONSAVEL";
+        else papel = usuario.getPapel().name();
+        var authority = new SimpleGrantedAuthority("ROLE_" + papel);
         var auth = new UsernamePasswordAuthenticationToken(usuario.getId(), null, List.of(authority));
         SecurityContextHolder.getContext().setAuthentication(auth);
     }

@@ -6,5 +6,7 @@ import java.util.UUID;
 public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
     Optional<Usuario> findByEmail(String email);
     Optional<Usuario> findByApelido(String apelido);
+    long countByPapel(PapelUsuario papel);
     List<Usuario> findByResponsavelEmailAndVinculoResponsavelConfirmadoFalse(String responsavelEmail);
+    List<Usuario> findByResponsavelEmailIgnoreCase(String responsavelEmail);
 }

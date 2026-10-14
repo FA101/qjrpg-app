@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/utils/erro_utils.dart';
+import '../../../core/widgets/tag_chip.dart';
+import '../../tag/presentation/tag_providers.dart';
 import 'auth_providers.dart';
 
 class PerfilPage extends ConsumerStatefulWidget {
@@ -21,7 +23,7 @@ class _PerfilPageState extends ConsumerState<PerfilPage> {
   bool _totpAtivo = false;
   String? _totpSegredoPendente;
   String? _totpOtpauthUri;
-  List<dynamic> _vinculosPendentes = [];
+  List<dynamic> _vinculos = [];
 
   @override
   void initState() {
@@ -30,7 +32,7 @@ class _PerfilPageState extends ConsumerState<PerfilPage> {
     _apelido = TextEditingController(text: usuario?.apelido ?? '');
     _mostrarNomeReal = usuario?.mostrarNomeReal ?? false;
     _carregarPerfil();
-    _carregarVinculosPendentes();
+    _carregarVinculos();
   }
 
   Future<void> _carregarPerfil() async {
@@ -44,10 +46,11 @@ class _PerfilPageState extends ConsumerState<PerfilPage> {
     } catch (_) {}
   }
 
-  Future<void> _carregarVinculosPendentes() async {
+  // RF36b/RF36c: menores vinculados a mim (autorizados ou nao).
+  Future<void> _carregarVinculos() async {
     try {
-      final r = await DioClient.instance.get('/usuarios/vinculos-pendentes');
-      setState(() => _vinculosPendentes = r.data as List<dynamic>);
+      final r = await DioClient.instance.get('/usuarios/vinculos');
+      if (mounted) setState(() => _vinculos = r.data as List<dynamic>);
     } catch (_) {}
   }
 
@@ -152,8 +155,19 @@ class _PerfilPageState extends ConsumerState<PerfilPage> {
   Future<void> _confirmarVinculo(String menorId) async {
     try {
       await DioClient.instance.patch('/usuarios/vinculos/$menorId/confirmar');
-      _carregarVinculosPendentes();
-      _mostrarMensagem('Vinculo confirmado.');
+      _carregarVinculos();
+      _mostrarMensagem('Acesso autorizado.');
+    } catch (e) {
+      _mostrarErro(e);
+    }
+  }
+
+  // RF36b: suspensao imediata, sem aprovacao de terceiros.
+  Future<void> _suspenderAcessoDoMenor(String menorId) async {
+    try {
+      await DioClient.instance.patch('/usuarios/vinculos/$menorId/revogar');
+      _carregarVinculos();
+      _mostrarMensagem('Acesso do menor suspenso.');
     } catch (e) {
       _mostrarErro(e);
     }
@@ -204,6 +218,16 @@ class _PerfilPageState extends ConsumerState<PerfilPage> {
         padding: const EdgeInsets.all(24),
         children: [
           Text('E-mail: ${usuario?.email ?? ''}'),
+          const SizedBox(height: 12),
+          const Text('Minhas tags', style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          ref.watch(minhasTagsProvider).when(
+                loading: () => const LinearProgressIndicator(),
+                error: (e, _) => Text(extrairMensagemErro(e)),
+                data: (tags) => tags.isEmpty
+                    ? const Text('Voce ainda nao tem tags.')
+                    : Wrap(spacing: 6, runSpacing: 6, children: tags.map((t) => TagChip(tag: t)).toList()),
+              ),
           const SizedBox(height: 16),
           TextField(controller: _apelido,
               decoration: const InputDecoration(labelText: 'Apelido publico', helperText: 'Minimo 3 caracteres, unico')),
@@ -252,15 +276,24 @@ class _PerfilPageState extends ConsumerState<PerfilPage> {
             ElevatedButton(onPressed: _confirmar2fa, child: const Text('Confirmar e ativar')),
           ],
           const Divider(height: 32),
-          if (_vinculosPendentes.isNotEmpty) ...[
-            const Text('Vinculos de menores pendentes da sua confirmacao:', style: TextStyle(fontWeight: FontWeight.bold)),
-            ..._vinculosPendentes.map((v) => ListTile(
-                  title: Text(v['nomeExibicao'] ?? v['id']),
-                  trailing: ElevatedButton(
-                    onPressed: () => _confirmarVinculo(v['id'] as String),
-                    child: const Text('Confirmar'),
-                  ),
-                )),
+          if (_vinculos.isNotEmpty) ...[
+            const Text('Menores sob sua responsabilidade', style: TextStyle(fontWeight: FontWeight.bold)),
+            ..._vinculos.map((v) {
+              final autorizado = v['vinculoResponsavelConfirmado'] == true;
+              return ListTile(
+                title: Text((v['nomeExibicao'] ?? v['id']).toString()),
+                subtitle: Text(autorizado ? 'Acesso autorizado' : 'Aguardando sua autorizacao'),
+                trailing: autorizado
+                    ? OutlinedButton(
+                        onPressed: () => _suspenderAcessoDoMenor(v['id'] as String),
+                        child: const Text('Suspender acesso'),
+                      )
+                    : ElevatedButton(
+                        onPressed: () => _confirmarVinculo(v['id'] as String),
+                        child: const Text('Autorizar'),
+                      ),
+              );
+            }),
             const Divider(height: 32),
           ],
           Text('Status da conta: ${_suspenso ? "Suspensa" : "Ativa"}'),

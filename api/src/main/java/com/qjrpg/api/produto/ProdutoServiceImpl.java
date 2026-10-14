@@ -1,6 +1,8 @@
 package com.qjrpg.api.produto;
 import com.qjrpg.api.produto.dto.ProdutoRequest;
 import com.qjrpg.api.shared.exception.RecursoNaoEncontradoException;
+import com.qjrpg.api.tag.TagService;
+import com.qjrpg.api.tag.TagSistema;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
@@ -8,12 +10,19 @@ import java.util.UUID;
 @Service
 public class ProdutoServiceImpl implements ProdutoService {
     private final ProdutoRepository repository;
-    public ProdutoServiceImpl(ProdutoRepository repository) { this.repository = repository; }
+    private final TagService tagService;
+
+    public ProdutoServiceImpl(ProdutoRepository repository, TagService tagService) {
+        this.repository = repository;
+        this.tagService = tagService;
+    }
 
     @Override
     public Produto criar(ProdutoRequest r, UUID usuarioId) {
-        return repository.save(new Produto(usuarioId, r.eventoId(), r.tipo(), r.titulo(),
+        Produto salvo = repository.save(new Produto(usuarioId, r.eventoId(), r.tipo(), r.titulo(),
                 r.descricao(), r.imagemUrl(), r.linkExterno()));
+        tagService.atribuirTagDoSistema(usuarioId, TagSistema.VENDAS); // RF15
+        return salvo;
     }
 
     @Override

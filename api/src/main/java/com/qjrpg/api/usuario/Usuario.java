@@ -137,9 +137,16 @@ public class Usuario {
     }
 
     public void confirmarVinculoResponsavel() { this.vinculoResponsavelConfirmado = true; }
-    public void revogarVinculoResponsavel() {
-        this.responsavelEmail = null;
-        this.vinculoResponsavelConfirmado = true;
+
+    /**
+     * RF36b: o responsavel suspende o acesso do menor imediatamente. O vinculo continua
+     * apontando para ele (pode reautorizar depois); troca de responsavel exige revisao (RF36).
+     */
+    public void revogarVinculoResponsavel() { this.vinculoResponsavelConfirmado = false; }
+
+    /** RF35: menor sem autorizacao vigente do responsavel so acessa o proprio perfil. */
+    public boolean aguardandoAutorizacaoResponsavel() {
+        return isMenorDeIdade() && !vinculoResponsavelConfirmado;
     }
 
     public void definirApelido(String apelido) { this.apelido = apelido; }

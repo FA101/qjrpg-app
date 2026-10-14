@@ -64,8 +64,10 @@ public class AuthServiceImpl implements AuthService {
             repository.save(usuario);
             throw new RegraDeNegocioException("Codigo invalido ou expirado");
         }
-        if (usuario.estaSuspenso()) {
-            throw new RegraDeNegocioException("Conta suspensa. Reative em Meu perfil ou aguarde o prazo.");
+        // Conta suspensa pelo proprio usuario (RF38) PODE entrar: recebe acesso restrito
+        // (JwtAuthFilter/SecurityConfig) que so permite ver o perfil e reativar.
+        if (!usuario.isAtivo()) {
+            throw new RegraDeNegocioException("Conta desativada. Procure a organizacao do evento.");
         }
 
         boolean precisaDeApelido = usuario.getApelido() == null;
@@ -104,9 +106,6 @@ public class AuthServiceImpl implements AuthService {
         // O desafio prova que o primeiro fator (codigo de e-mail) foi concluido ha pouco.
         if (!usuario.desafio2faValido(desafio2fa)) {
             throw new RegraDeNegocioException("Sessao de login expirada. Solicite um novo codigo por e-mail.");
-        }
-        if (usuario.estaSuspenso()) {
-            throw new RegraDeNegocioException("Conta suspensa. Reative em Meu perfil ou aguarde o prazo.");
         }
         if (!totpService.validarCodigo(usuario.getTotpSecret(), codigoTotp)) {
             usuario.registrarTentativaFalha();

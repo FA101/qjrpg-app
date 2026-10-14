@@ -6,4 +6,5 @@ import java.util.UUID;
 
 public interface TagRepository extends JpaRepository<Tag, UUID> {
     Optional<Tag> findByCorHex(String corHex);
+    Optional<Tag> findByNome(String nome);
 }

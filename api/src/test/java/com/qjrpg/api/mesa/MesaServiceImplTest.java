@@ -6,6 +6,8 @@ import com.qjrpg.api.evento.StatusEvento;
 import com.qjrpg.api.mesa.dto.MesaRequest;
 import com.qjrpg.api.notificacao.NotificacaoService;
 import com.qjrpg.api.shared.exception.RegraDeNegocioException;
+import com.qjrpg.api.tag.TagService;
+import com.qjrpg.api.tag.TagSistema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +23,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,13 +33,14 @@ class MesaServiceImplTest {
     @Mock private MesaRepository mesaRepository;
     @Mock private EventoRepository eventoRepository;
     @Mock private NotificacaoService notificacaoService;
+    @Mock private TagService tagService;
     private MesaService service;
 
     private final UUID eventoId = UUID.randomUUID();
     private final UUID gmId = UUID.randomUUID();
 
     @BeforeEach
-    void configurar() { service = new MesaServiceImpl(mesaRepository, eventoRepository, notificacaoService); }
+    void configurar() { service = new MesaServiceImpl(mesaRepository, eventoRepository, notificacaoService, tagService); }
 
     private Evento eventoComJanela() {
         return new Evento("QJRPG", LocalDate.of(2026, 8, 15), "HUB Goias", null, StatusEvento.PUBLICADO,
@@ -93,6 +98,32 @@ class MesaServiceImplTest {
         Mesa mesa = service.ofertar(requestPadrao(3, LocalTime.of(9, 0), LocalTime.of(12, 0)), outroUsuario);
 
         assertThat(mesa.getGameMasterId()).isEqualTo(outroUsuario);
+    }
+
+    @Test
+    void aprovarMesaAtribuiTagGameMasterAoOfertante() { // RF09
+        UUID mesaId = UUID.randomUUID();
+        Mesa mesa = new Mesa(eventoId, gmId, 1, "RPG", null, null, null, null, null, "Livre",
+                LocalTime.of(9, 0), LocalTime.of(13, 0), 5, 0);
+        when(mesaRepository.findById(mesaId)).thenReturn(Optional.of(mesa));
+        when(mesaRepository.save(any(Mesa.class))).thenAnswer(c -> c.getArgument(0));
+
+        service.atualizarStatus(mesaId, StatusMesa.APROVADA);
+
+        verify(tagService).atribuirTagDoSistema(gmId, TagSistema.GAME_MASTER);
+    }
+
+    @Test
+    void recusarMesaNaoAtribuiTag() {
+        UUID mesaId = UUID.randomUUID();
+        Mesa mesa = new Mesa(eventoId, gmId, 1, "RPG", null, null, null, null, null, "Livre",
+                LocalTime.of(9, 0), LocalTime.of(13, 0), 5, 0);
+        when(mesaRepository.findById(mesaId)).thenReturn(Optional.of(mesa));
+        when(mesaRepository.save(any(Mesa.class))).thenAnswer(c -> c.getArgument(0));
+
+        service.atualizarStatus(mesaId, StatusMesa.RECUSADA);
+
+        verify(tagService, never()).atribuirTagDoSistema(any(), any());
     }
 
     @Test

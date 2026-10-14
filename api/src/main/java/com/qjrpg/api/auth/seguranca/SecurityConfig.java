@@ -42,7 +42,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/conteudos/**", "/api/links-uteis").permitAll()
-                        .anyRequest().authenticated())
+                        // Acesso restrito (RF35/RF38): qualquer autenticado ve o proprio perfil;
+                        // conta suspensa pode reativar. O resto exige papel pleno.
+                        .requestMatchers(HttpMethod.GET, "/api/usuarios/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/usuarios/me/reativar").authenticated()
+                        .anyRequest().hasAnyRole("ADMIN", "MODERADOR", "COMUM"))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

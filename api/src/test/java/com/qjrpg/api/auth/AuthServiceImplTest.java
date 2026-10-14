@@ -137,6 +137,34 @@ class AuthServiceImplTest {
     }
 
     @Test
+    void contaSuspensaPeloProprioUsuarioConsegueEntrarParaReativar() { // RF38
+        Usuario usuario = new Usuario("pausa@exemplo.com", PapelUsuario.COMUM);
+        usuario.definirApelido("Pausado");
+        usuario.suspenderPor(10);
+        usuario.definirCodigo("123456", Instant.now().plusSeconds(60));
+        when(repository.findByEmail("pausa@exemplo.com")).thenReturn(Optional.of(usuario));
+        when(repository.save(any(Usuario.class))).thenAnswer(c -> c.getArgument(0));
+        when(jwtService.gerarToken(any(), any())).thenReturn("token-restrito");
+
+        AuthResultado resultado = service.confirmarCodigo("pausa@exemplo.com", "123456", null, null, null,
+                null, null, null);
+
+        assertThat(resultado.token()).isEqualTo("token-restrito");
+    }
+
+    @Test
+    void contaDesativadaPelaModeracaoNaoEntra() {
+        Usuario usuario = new Usuario("banido@exemplo.com", PapelUsuario.COMUM);
+        usuario.definirApelido("Banido");
+        usuario.definirAtivo(false);
+        usuario.definirCodigo("123456", Instant.now().plusSeconds(60));
+        when(repository.findByEmail("banido@exemplo.com")).thenReturn(Optional.of(usuario));
+
+        assertThrows(RegraDeNegocioException.class, () -> service.confirmarCodigo("banido@exemplo.com", "123456",
+                null, null, null, null, null, null));
+    }
+
+    @Test
     void codigoDeEmailInvalidaAposCincoTentativasErradas() {
         Usuario usuario = new Usuario("jogador@exemplo.com", PapelUsuario.COMUM);
         usuario.definirCodigo("123456", Instant.now().plusSeconds(60));

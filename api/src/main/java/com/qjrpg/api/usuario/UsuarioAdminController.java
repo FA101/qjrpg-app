@@ -2,6 +2,8 @@ package com.qjrpg.api.usuario;
 
 import com.qjrpg.api.shared.exception.RecursoNaoEncontradoException;
 import com.qjrpg.api.shared.exception.RegraDeNegocioException;
+import com.qjrpg.api.tag.TagService;
+import com.qjrpg.api.tag.TagSistema;
 import com.qjrpg.api.usuario.dto.AtivoUpdateRequest;
 import com.qjrpg.api.usuario.dto.PapelUpdateRequest;
 import com.qjrpg.api.usuario.dto.UsuarioResponse;
@@ -26,9 +28,11 @@ import java.util.stream.Collectors;
 public class UsuarioAdminController {
 
     private final UsuarioRepository repository;
+    private final TagService tagService;
 
-    public UsuarioAdminController(UsuarioRepository repository) {
+    public UsuarioAdminController(UsuarioRepository repository, TagService tagService) {
         this.repository = repository;
+        this.tagService = tagService;
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','MODERADOR')")
@@ -41,8 +45,19 @@ public class UsuarioAdminController {
     @PatchMapping("/{id}/papel")
     public UsuarioResponse alterarPapel(@PathVariable UUID id, @Valid @RequestBody PapelUpdateRequest r) {
         Usuario usuario = buscar(id);
+        boolean eraAdmin = usuario.getPapel() == PapelUsuario.ADMIN;
+        if (eraAdmin && r.papel() != PapelUsuario.ADMIN
+                && repository.countByPapel(PapelUsuario.ADMIN) <= 1) {
+            throw new RegraDeNegocioException("Nao e possivel demover o ultimo Administrador");
+        }
         usuario.definirPapel(r.papel());
         repository.save(usuario);
+        // Tag Moderador acompanha o papel (atribuida somente por promocao - PRD secao 4)
+        if (r.papel() == PapelUsuario.MODERADOR) {
+            tagService.atribuirTagDoSistema(usuario.getId(), TagSistema.MODERADOR);
+        } else {
+            tagService.removerTagDoSistema(usuario.getId(), TagSistema.MODERADOR);
+        }
         return UsuarioResponse.de(usuario);
     }
 

@@ -21,4 +21,24 @@ class TagApiRepository implements TagRepository {
 
   @override
   Future<void> excluir(String id) async => _dio.delete('/tags/$id');
+
+  @override
+  Future<List<Tag>> tagsDoUsuario(String usuarioId) async {
+    final r = await _dio.get('/usuarios/$usuarioId/tags');
+    return (r.data as List).map((j) => TagDto.fromJson(j)).toList();
+  }
+
+  @override
+  Future<List<Tag>> minhasTags() async {
+    final r = await _dio.get('/usuarios/me/tags');
+    return (r.data as List).map((j) => TagDto.fromJson(j)).toList();
+  }
+
+  @override
+  Future<void> atribuirAoUsuario(String usuarioId, String tagId) async =>
+      _dio.post('/usuarios/$usuarioId/tags/$tagId');
+
+  @override
+  Future<void> removerDoUsuario(String usuarioId, String tagId) async =>
+      _dio.delete('/usuarios/$usuarioId/tags/$tagId');
 }

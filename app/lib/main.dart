@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'features/auth/presentation/auth_providers.dart';
+import 'features/auth/presentation/conta_restrita_page.dart';
 import 'features/auth/presentation/login_page.dart';
 import 'features/evento/presentation/evento_list_page.dart';
 
@@ -33,7 +34,9 @@ class _PortaDeEntrada extends ConsumerWidget {
     return inicializacao.when(
       data: (_) {
         final usuario = ref.watch(authNotifierProvider);
-        return usuario == null ? const LoginPage() : const EventoListPage();
+        if (usuario == null) return const LoginPage();
+        if (usuario.acessoRestrito) return const ContaRestritaPage();
+        return const EventoListPage();
       },
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (_, __) => const LoginPage(),

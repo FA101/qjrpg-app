@@ -73,6 +73,8 @@ class AuthApiRepository implements AuthRepository {
       email: dados['email'] as String,
       papel: dados['papel'] as String,
       mostrarNomeReal: dados['mostrarNomeReal'] as bool? ?? false,
+      suspenso: dados['suspenso'] as bool? ?? false,
+      aguardandoAutorizacaoResponsavel: dados['aguardandoAutorizacaoResponsavel'] as bool? ?? false,
     );
   }
 }

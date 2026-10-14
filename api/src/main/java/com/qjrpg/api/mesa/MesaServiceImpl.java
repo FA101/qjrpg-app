@@ -6,6 +6,8 @@ import com.qjrpg.api.mesa.dto.MesaRequest;
 import com.qjrpg.api.notificacao.NotificacaoService;
 import com.qjrpg.api.shared.exception.RecursoNaoEncontradoException;
 import com.qjrpg.api.shared.exception.RegraDeNegocioException;
+import com.qjrpg.api.tag.TagService;
+import com.qjrpg.api.tag.TagSistema;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,12 +19,14 @@ public class MesaServiceImpl implements MesaService {
     private final MesaRepository mesaRepository;
     private final EventoRepository eventoRepository;
     private final NotificacaoService notificacaoService;
+    private final TagService tagService;
 
     public MesaServiceImpl(MesaRepository mesaRepository, EventoRepository eventoRepository,
-                            NotificacaoService notificacaoService) {
+                            NotificacaoService notificacaoService, TagService tagService) {
         this.mesaRepository = mesaRepository;
         this.eventoRepository = eventoRepository;
         this.notificacaoService = notificacaoService;
+        this.tagService = tagService;
     }
 
     @Override
@@ -76,6 +80,9 @@ public class MesaServiceImpl implements MesaService {
         Mesa mesa = buscarPorId(id);
         mesa.atualizarStatus(status);
         Mesa salva = mesaRepository.save(mesa);
+        if (status == StatusMesa.APROVADA) {
+            tagService.atribuirTagDoSistema(mesa.getGameMasterId(), TagSistema.GAME_MASTER); // RF09
+        }
         notificacaoService.notificar(mesa.getGameMasterId(),
                 "Sua mesa '" + mesa.getTipoJogo() + "' foi atualizada para: " + status);
         return salva;

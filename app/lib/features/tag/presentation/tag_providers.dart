@@ -9,3 +9,12 @@ final tagRepositoryProvider = Provider<TagRepository>((ref) => TagApiRepository(
 final tagsProvider = FutureProvider.autoDispose<List<Tag>>((ref) {
   return ref.watch(tagRepositoryProvider).listarTodos();
 });
+
+/// RF21: tags acumuladas pelo usuario logado.
+final minhasTagsProvider = FutureProvider.autoDispose<List<Tag>>((ref) {
+  return ref.watch(tagRepositoryProvider).minhasTags();
+});
+
+final tagsDoUsuarioProvider = FutureProvider.autoDispose.family<List<Tag>, String>((ref, usuarioId) {
+  return ref.watch(tagRepositoryProvider).tagsDoUsuario(usuarioId);
+});

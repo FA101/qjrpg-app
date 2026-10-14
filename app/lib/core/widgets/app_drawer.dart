@@ -8,6 +8,7 @@ import '../../features/auth/presentation/auth_providers.dart';
 import '../../features/auth/presentation/perfil_page.dart';
 import '../../features/moderacao/presentation/denuncias_page.dart';
 import '../../features/relatorio/presentation/relatorio_page.dart';
+import '../../features/usuario/presentation/usuarios_admin_page.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -55,6 +56,11 @@ class AppDrawer extends ConsumerWidget {
               leading: const Icon(Icons.flag),
               title: const Text('Denuncias pendentes'),
               onTap: () => _irPara(context, const DenunciasPage()),
+            ),
+            ListTile(
+              leading: const Icon(Icons.manage_accounts),
+              title: const Text('Usuarios'),
+              onTap: () => _irPara(context, const UsuariosAdminPage()),
             ),
             ListTile(
               leading: const Icon(Icons.bar_chart),

@@ -96,6 +96,15 @@ public class UsuarioController {
                 .stream().map(UsuarioResponse::de).collect(Collectors.toList());
     }
 
+    // RF36b/RF36c: todos os menores vinculados a mim (autorizados ou suspensos)
+    @GetMapping("/vinculos")
+    public List<UsuarioResponse> meusVinculos(Authentication auth) {
+        Usuario responsavel = buscar(auth);
+        return repository.findByResponsavelEmailIgnoreCase(responsavel.getEmail()).stream()
+                .filter(Usuario::isMenorDeIdade)
+                .map(UsuarioResponse::de).collect(Collectors.toList());
+    }
+
     @PatchMapping("/vinculos/{menorId}/confirmar")
     public UsuarioResponse confirmarVinculo(@PathVariable UUID menorId, Authentication auth) {
         Usuario responsavel = buscar(auth);

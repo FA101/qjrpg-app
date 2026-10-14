@@ -25,7 +25,7 @@ class AuthNotifier extends StateNotifier<Usuario?> {
       _desafio2fa = resultado.desafio2fa;
       return true;
     }
-    state = resultado.usuario;
+    state = await _perfilCompleto(resultado.usuario!);
     return false;
   }
 
@@ -34,8 +34,23 @@ class AuthNotifier extends StateNotifier<Usuario?> {
     if (desafio == null) {
       throw StateError('Sessao de login expirada. Solicite um novo codigo por e-mail.');
     }
-    state = await _repository.validarSegundoFator(email, desafio, codigo);
+    final usuario = await _repository.validarSegundoFator(email, desafio, codigo);
     _desafio2fa = null;
+    state = await _perfilCompleto(usuario);
+  }
+
+  /// Recarrega o perfil apos mudancas de estado (ex.: reativar conta).
+  Future<void> recarregarPerfil() async {
+    state = await _repository.buscarPerfil();
+  }
+
+  /// O login devolve so os dados basicos; o perfil traz os estados de acesso (suspenso, pendente).
+  Future<Usuario> _perfilCompleto(Usuario basico) async {
+    try {
+      return await _repository.buscarPerfil();
+    } catch (_) {
+      return basico;
+    }
   }
 
   void definirUsuario(Usuario usuario) { state = usuario; }
