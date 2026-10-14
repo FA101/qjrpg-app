@@ -84,6 +84,12 @@
 			<version>0.12.6</version>
 			<scope>runtime</scope>
 		</dependency>			
+		<!-- Banco em memoria apenas para os testes de integracao (sem depender do PostgreSQL local) -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>dev.samstevens.totp</groupId>
 			<artifactId>totp</artifactId>
